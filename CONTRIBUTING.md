@@ -18,7 +18,7 @@ If this is your first contribution, read in order:
 ## License and CLA
 
 - Zentro core is licensed under GPL-3.0-only.
-- Every pull request requires a signed Contributor License Agreement. See [CLA.md](CLA.md). A bot will ask you to sign on your first PR. PRs without a signed CLA will not be merged.
+- Every pull request requires a signed Contributor License Agreement. See [CLA.md](CLA.md). On your first PR a bot comments with a link to the CLA; reply with the sentence it asks for (`I have read the CLA Document and I hereby sign the CLA`) and the check turns green. PRs without a signed CLA will not be merged.
 
 ## Security issues
 

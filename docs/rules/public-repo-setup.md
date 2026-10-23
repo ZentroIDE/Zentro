@@ -76,7 +76,11 @@ commits straight to `main`, and a sole maintainer cannot approve their own pull 
    A required status check that never reports blocks every pull request. The names in `main.json`
    (`build`, `secret-scan`, `backend-quality`, `frontend-quality`, `license-check`) are the job names in `.github/workflows/` (`entitlement-matrix` is private-only: the public tree has no Pro feature registry); open one test pull request and
    confirm each one reports before relying on the ruleset.
-6. **Install the CLA Assistant bot** on the public repository, then confirm the `public-tree` CI job
+6. **CLA bot**: `.github/workflows/cla.yml` (contributor-assistant/github-action) is exported with the tree. It needs the
+   secret `CLA_PERSONAL_ACCESS_TOKEN` (fine-grained PAT, Contents read/write on the public repo) and the branch
+   `cla-signatures`, created once from `main`, where it stores `signatures/v1/cla.json`. That is the one branch besides
+   `main` the public repo has; `sync-public-repo` only touches `main`, so signatures survive syncs. In Settings > Actions >
+   General allow actions created by GitHub plus `contributor-assistant/github-action@*`. Then confirm the `public-tree` CI job
    is green on the public tree.
 7. **Announce**: the landing page's Community Edition link (`CE_REPO_URL`) and the README links now
    resolve; transfer the open issues from `zentro-window-issue-tracker` if that is still the plan.

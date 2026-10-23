@@ -3,5 +3,6 @@
 # scripts/pull-back-pr.mjs checks each patch's author email against this file
 # before `git am`. Lines starting with # are ignored.
 #
-# Until a CLA bot is wired up (see CONTRIBUTING.md), add a line by hand once
-# you've received a signed CLA from that contributor.
+# The CLA bot (.github/workflows/cla.yml) records signatures in signatures/v1/cla.json on the
+# public repo's `cla-signatures` branch, keyed by GitHub login, not email. Copy the author email
+# of each signed contributor here by hand before pulling their PR back.
