@@ -74,8 +74,7 @@ commits straight to `main`, and a sole maintainer cannot approve their own pull 
    ```
 
    A required status check that never reports blocks every pull request. The names in `main.json`
-   (`build`, `secret-scan`, `backend-quality`, `frontend-quality`, `license-check`,
-   `entitlement-matrix`) are the job names in `.github/workflows/`; open one test pull request and
+   (`build`, `secret-scan`, `backend-quality`, `frontend-quality`, `license-check`) are the job names in `.github/workflows/` (`entitlement-matrix` is private-only: the public tree has no Pro feature registry); open one test pull request and
    confirm each one reports before relying on the ruleset.
 6. **Install the CLA Assistant bot** on the public repository, then confirm the `public-tree` CI job
    is green on the public tree.

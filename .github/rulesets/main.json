@@ -32,8 +32,7 @@
           { "context": "secret-scan" },
           { "context": "backend-quality" },
           { "context": "frontend-quality" },
-          { "context": "license-check" },
-          { "context": "entitlement-matrix" }
+          { "context": "license-check" }
         ]
       }
     }

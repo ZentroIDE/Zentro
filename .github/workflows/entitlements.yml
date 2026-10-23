@@ -28,7 +28,11 @@ concurrency:
 
 jobs:
   entitlement-matrix:
-    if: ${{ !(github.event_name == 'push' && github.ref == 'refs/heads/main' && github.event.repository.private) }}
+    # Private repo only. The public tree has no pro_features.go, so its Go registry is
+    # smaller than the committed matrix (which keeps the Pro rows on purpose, see
+    # public-export.json) and this check can never pass there. On main the private repo
+    # skips it too: main only fast-forwards from dev, which has just been checked.
+    if: ${{ github.event.repository.private && !(github.event_name == 'push' && github.ref == 'refs/heads/main') }}
     runs-on: ubuntu-latest
     steps:
       - name: Checkout
