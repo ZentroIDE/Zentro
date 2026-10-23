@@ -82,6 +82,6 @@
         "vitest": "^3.2.4"
     },
     "overrides": {
-        "dompurify": "^3.4.13"
+        "dompurify": "^3.4.17"
     }
 }
