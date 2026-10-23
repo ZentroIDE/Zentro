@@ -2,7 +2,7 @@
 
 All notable changes to this project will be documented in this file. See [commit-and-tag-version](https://github.com/absolute-version/commit-and-tag-version) for commit guidelines.
 
-## [0.10.0](https://github.com/ZentroIDE/Zentro/compare/v0.9.0...v0.10.0) (2026-10-22)
+## [0.10.0](https://github.com/ZentroIDE/Zentro/compare/v0.9.0...v0.10.0) (2026-10-23)
 
 
 ### ⚠ BREAKING CHANGES
