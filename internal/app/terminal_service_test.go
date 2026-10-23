@@ -104,7 +104,12 @@ func (e *terminalEvents) exitCount() int {
 
 func waitFor(t *testing.T, what string, cond func() bool) {
 	t.Helper()
-	deadline := time.Now().Add(5 * time.Second)
+	waitForWithin(t, 5*time.Second, what, cond)
+}
+
+func waitForWithin(t *testing.T, timeout time.Duration, what string, cond func() bool) {
+	t.Helper()
+	deadline := time.Now().Add(timeout)
 	for time.Now().Before(deadline) {
 		if cond() {
 			return
@@ -316,7 +321,16 @@ func TestLocalShellRoundTrip(t *testing.T) {
 	if err := svc.Write(info.ID, command); err != nil {
 		t.Fatal(err)
 	}
-	waitFor(t, "shell output", func() bool { return strings.Contains(events.output(info.ID), want) })
+	// A real shell cold-starts slowly on a shared CI runner (PowerShell under
+	// ConPTY took longer than 5s there), so give it far more room than the fakes.
+	defer func() {
+		if t.Failed() {
+			t.Logf("shell output so far: %q", events.output(info.ID))
+		}
+	}()
+	waitForWithin(t, 45*time.Second, "shell output", func() bool {
+		return strings.Contains(events.output(info.ID), want)
+	})
 
 	if err := svc.Resize(info.ID, 120, 40); err != nil {
 		t.Errorf("resize: %v", err)
