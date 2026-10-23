@@ -183,6 +183,9 @@ Then merge back: `git checkout dev && git merge main --no-edit && git push origi
 
 ---
 
+> **Before tagging:** bump the hand-written version badge and the "Current stable release" line in
+> `README.md` (nothing generates them), commit, then run the public sync so the public README matches.
+
 # 6. Sibling repos (after the app CI has registered the release)
 
 Each deploys on push to its own `master`.

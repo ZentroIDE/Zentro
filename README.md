@@ -7,7 +7,7 @@
 <p align="center">The free, cross-platform SQL IDE for anyone who works with data —<br>developers, analysts, and database operators alike.</p>
 
 <p align="center">
-  <img alt="Release" src="https://img.shields.io/badge/release-v0.9.0-2ea44f">
+  <img alt="Release" src="https://img.shields.io/badge/release-v0.10.0-2ea44f">
   <img alt="Platform" src="https://img.shields.io/badge/platform-Windows%20%7C%20macOS%20%7C%20Linux-blue">
   <img alt="Go" src="https://img.shields.io/badge/Go-1.25+-00ADD8?logo=go">
   <img alt="Wails" src="https://img.shields.io/badge/Wails-v2-orange">
@@ -46,7 +46,7 @@ Built with a Go + Wails backend and a React + TypeScript frontend.
 
 Download the latest prebuilt binaries from [zentro-ide.com/downloads](https://zentro-ide.com/downloads).
 
-Current stable release: **v0.9.0** (September 23, 2026).  
+Current stable release: **v0.10.0** (October 23, 2026).  
 See [CHANGELOG.md](CHANGELOG.md) for release notes.
 
 ## Request a database provider
