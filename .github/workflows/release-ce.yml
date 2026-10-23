@@ -1,0 +1,218 @@
+name: Release CE
+
+# Builds the Community Edition (the free core, no Pro code) for a release and attaches
+# it to that release. Runs only in the public repository, where Actions minutes are
+# free, and builds from the release's own tag so the binary matches the source
+# anyone can read. There is no signing step and no secret here: CE files are
+# unsigned, and SHA256SUMS-ce.txt lets people check them.
+#
+# Starts when a release is published. Run it by hand (Actions > Release CE > Run
+# workflow) for a release that predates this file, or to rebuild one.
+
+on:
+  release:
+    types: [published]
+  workflow_dispatch:
+    inputs:
+      tag:
+        description: 'Release tag to build the Community Edition for, e.g. v0.10.0'
+        required: true
+
+permissions:
+  contents: write
+
+env:
+  TAG: ${{ inputs.tag || github.event.release.tag_name }}
+
+concurrency:
+  group: release-ce-${{ inputs.tag || github.event.release.tag_name }}
+  cancel-in-progress: false
+
+jobs:
+  build:
+    name: Build CE (${{ matrix.platform }})
+    # Public repository only: the private tree contains the Pro code and must never be
+    # built or published as the Community Edition.
+    if: ${{ !github.event.repository.private }}
+    strategy:
+      fail-fast: false
+      matrix:
+        include:
+          - os: windows-latest
+            platform: windows/amd64
+          - os: ubuntu-22.04
+            platform: linux/amd64
+          - os: macos-latest
+            platform: darwin/universal
+    runs-on: ${{ matrix.os }}
+
+    steps:
+      - name: Checkout the release tag
+        uses: actions/checkout@v4
+        with:
+          ref: refs/tags/${{ env.TAG }}
+
+      - name: Get version from tag
+        id: get_version
+        shell: bash
+        run: echo "version=${TAG#v}" >> "$GITHUB_OUTPUT"
+
+      - name: Sync release version metadata
+        shell: bash
+        env:
+          RELEASE_VERSION: ${{ steps.get_version.outputs.version }}
+        run: |
+          node <<'NODE'
+          const fs = require('fs');
+
+          const releaseVersion = process.env.RELEASE_VERSION;
+          const coreVersion = releaseVersion.split('-')[0];
+          const parts = coreVersion.split('.');
+          while (parts.length < 4) parts.push('0');
+          const productVersion = parts.slice(0, 4).join('.');
+
+          const writeJson = (file, mutate) => {
+            const data = JSON.parse(fs.readFileSync(file, 'utf8'));
+            mutate(data);
+            fs.writeFileSync(file, `${JSON.stringify(data, null, 2)}\n`);
+          };
+
+          writeJson('package.json', (data) => {
+            data.version = releaseVersion;
+          });
+          writeJson('frontend/package.json', (data) => {
+            data.version = releaseVersion;
+          });
+          writeJson('wails.json', (data) => {
+            data.info = data.info || {};
+            data.info.productVersion = productVersion;
+          });
+          NODE
+
+      - name: Setup Go
+        uses: actions/setup-go@v5
+        with:
+          go-version-file: go.mod
+          cache: true
+          cache-dependency-path: go.sum
+
+      - name: Setup Node
+        uses: actions/setup-node@v4
+        with:
+          node-version: '20'
+          cache: 'npm'
+          cache-dependency-path: frontend/package-lock.json
+
+      - name: Install Wails
+        run: go install github.com/wailsapp/wails/v2/cmd/wails@v2.11.0
+
+      - name: Install Linux dependencies
+        if: matrix.os == 'ubuntu-22.04'
+        run: |
+          sudo apt-get update
+          sudo apt-get install -y libgtk-3-dev libwebkit2gtk-4.0-dev build-essential pkg-config
+
+      - name: Wails Build
+        shell: bash
+        run: |
+          VERSION=${{ steps.get_version.outputs.version }}
+          # Wails builds with -buildvcs=false, so stamp the commit and build time in
+          # explicitly for About to show them.
+          BUILD_COMMIT="$(git rev-parse HEAD)"
+          BUILD_DATE="$(date -u +%Y-%m-%dT%H:%M:%SZ)"
+          LDFLAGS="-s -w -X 'zentro/internal/app.Version=v${VERSION}' -X 'zentro/internal/app.BuildCommit=${BUILD_COMMIT}' -X 'zentro/internal/app.BuildDate=${BUILD_DATE}'"
+          if [[ "${{ matrix.os }}" == "windows-latest" ]]; then
+            LDFLAGS="$LDFLAGS -H windowsgui"
+          fi
+          wails build -platform ${{ matrix.platform }} -ldflags "$LDFLAGS" -clean
+
+      - name: Package Windows
+        if: matrix.os == 'windows-latest'
+        shell: bash
+        run: |
+          VERSION=${{ steps.get_version.outputs.version }}
+          mkdir -p release-assets
+          mv build/bin/zentro.exe "release-assets/zentro-ce-v${VERSION}-windows-amd64.exe"
+
+      - name: Package macOS
+        if: matrix.os == 'macos-latest'
+        shell: bash
+        run: |
+          VERSION=${{ steps.get_version.outputs.version }}
+          cd build/bin
+          if [ -d "Zentro.app" ]; then
+            APP_BUNDLE="Zentro.app"
+          elif [ -d "zentro.app" ]; then
+            APP_BUNDLE="zentro.app"
+          else
+            echo "Expected macOS app bundle was not produced."
+            ls -la
+            exit 1
+          fi
+          cp ../../THIRD_PARTY_NOTICES.md "$APP_BUNDLE/Contents/Resources/THIRD_PARTY_NOTICES.md"
+          cp ../../LICENSE "$APP_BUNDLE/Contents/Resources/LICENSE"
+          # Ad-hoc signature: without any signature the arm64 slice of a universal
+          # binary refuses to run on Apple Silicon. It is not a Developer ID
+          # signature, so Gatekeeper still warns on first launch.
+          codesign --force --deep --sign - "$APP_BUNDLE"
+          mkdir -p ../../release-assets
+          zip -r "../../release-assets/zentro-ce-v${VERSION}-macos-universal.zip" "$APP_BUNDLE"
+
+      - name: Install nfpm
+        if: matrix.os == 'ubuntu-22.04'
+        run: go install github.com/goreleaser/nfpm/v2/cmd/nfpm@v2.47.0
+
+      - name: Package Linux DEB
+        if: matrix.os == 'ubuntu-22.04'
+        shell: bash
+        run: |
+          set -euo pipefail
+          VERSION=${{ steps.get_version.outputs.version }}
+          mkdir -p release-assets linux-stage
+          mv build/bin/zentro linux-stage/zentro-bin
+
+          # The shared nfpm config describes the official package. Derive the CE one:
+          # its own package name, no commercial license, and a conflict with the
+          # official package, which installs the same files.
+          sed -e 's/^name: zentro$/name: zentro-ce/' \
+              -e 's/^license: .*/license: GPL-3.0-only/' \
+              build/linux/nfpm.yaml > nfpm-ce.yaml
+          printf 'conflicts:\n  - zentro\nreplaces:\n  - zentro\n' >> nfpm-ce.yaml
+
+          VERSION="$VERSION" nfpm package \
+            --config nfpm-ce.yaml \
+            --packager deb \
+            --target "release-assets/zentro-ce-v${VERSION}-linux-amd64.deb"
+
+      - name: Upload assets to the release
+        shell: bash
+        env:
+          GH_TOKEN: ${{ github.token }}
+        run: |
+          # A glob with no match stays literal and makes gh fail, which is what we want.
+          gh release upload "${TAG}" release-assets/* --repo "${GITHUB_REPOSITORY}" --clobber
+
+  checksums:
+    name: Publish checksums
+    needs: build
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checksum every CE file on the release
+        env:
+          GH_TOKEN: ${{ github.token }}
+        run: |
+          set -euo pipefail
+          VERSION="${TAG#v}"
+          mkdir dl
+          gh release download "${TAG}" --repo "${GITHUB_REPOSITORY}" --pattern 'zentro-ce-*' --dir dl
+
+          for name in \
+            "zentro-ce-v${VERSION}-windows-amd64.exe" \
+            "zentro-ce-v${VERSION}-macos-universal.zip" \
+            "zentro-ce-v${VERSION}-linux-amd64.deb"; do
+            [ -f "dl/${name}" ] || { echo "::error::Missing CE asset: ${name}"; exit 1; }
+          done
+
+          (cd dl && sha256sum zentro-ce-* > ../SHA256SUMS-ce.txt)
+          cat SHA256SUMS-ce.txt
+          gh release upload "${TAG}" SHA256SUMS-ce.txt --repo "${GITHUB_REPOSITORY}" --clobber

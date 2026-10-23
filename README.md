@@ -45,6 +45,9 @@ Built with a Go + Wails backend and a React + TypeScript frontend.
 ## Download
 
 Download the latest prebuilt binaries from [zentro-ide.com/downloads](https://zentro-ide.com/downloads).
+Prefer a binary built in the open from this exact source? Each [release](https://github.com/ZentroIDE/Zentro/releases)
+also carries unsigned Community Edition files (`zentro-ce-*`) built by GitHub Actions in this repository, with
+`SHA256SUMS-ce.txt`; the release notes explain the difference.
 
 Current stable release: **v0.10.0** (October 23, 2026).  
 See [CHANGELOG.md](CHANGELOG.md) for release notes.

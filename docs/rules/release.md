@@ -186,6 +186,17 @@ Then merge back: `git checkout dev && git merge main --no-edit && git push origi
 > **Before tagging:** bump the hand-written version badge and the "Current stable release" line in
 > `README.md` (nothing generates them), commit, then run the public sync so the public README matches.
 
+## Community Edition build (`release-ce.yml`, public repo only)
+
+The release body ends with the official-vs-CE download guide (`.github/RELEASE_EDITIONS.md`, appended by
+`prepare`). The CE files themselves come from `.github/workflows/release-ce.yml`, which is exported to the
+public repository (the private `release.yml` is not). It runs there on `release: published`, checks out the
+release tag, builds the Pro-free tree on Windows, Linux (`.deb`) and macOS (`.zip`, ad-hoc signed) with free
+runners, uploads `zentro-ce-v<version>-*` and then `SHA256SUMS-ce.txt`. No secret, no signing, not registered
+with zentro-api. **Run `sync-public-repo` before tagging** so the public `main` already holds this workflow:
+a release event runs the workflow file from the tag's commit. For an older release, or a rebuild, run it by
+hand: `gh workflow run "Release CE" --repo ZentroIDE/Zentro -f tag=vX.Y.Z`.
+
 # 6. Sibling repos (after the app CI has registered the release)
 
 Each deploys on push to its own `master`.
