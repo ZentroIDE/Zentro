@@ -1,0 +1,63 @@
+// SPDX-License-Identifier: GPL-3.0-only
+
+import {
+    SCCommit,
+    SCGetFileDiffs,
+    SCGetHistory,
+    SCGetStatus,
+    SCGetWorkingFileDiff,
+    SCListBranches,
+    SCCheckoutBranch,
+    SCCreateBranch,
+    SCCreateBranchFrom,
+    SCCheckoutDetached,
+    SCInitRepo,
+    SCReadGitIgnore,
+    SCWriteGitIgnore,
+    SCStageAll,
+    SCStageFile,
+    SCUnstageFile,
+    EnableGitTracking,
+    DisableGitTracking,
+    GetGitTrackingStatus,
+    ListGitTimeline,
+    GetGitCommitDiff,
+    GetCommitFileDiffs,
+    ManualGitCommit,
+    GetGitPendingChanges,
+    RestoreGitCommit,
+    RunGitTrackingMigration,
+} from '../../../wailsjs/go/app/App';
+import type { SCStatus } from './types';
+
+export const sourceControlAdapter = {
+    SCCommit,
+    SCGetFileDiffs,
+    SCGetHistory,
+    SCGetStatus: async () => {
+        const result = await SCGetStatus();
+        return result as SCStatus;
+    },
+    SCGetWorkingFileDiff,
+    SCListBranches,
+    SCCheckoutBranch,
+    SCCreateBranch,
+    SCCreateBranchFrom,
+    SCCheckoutDetached,
+    SCInitRepo,
+    SCReadGitIgnore,
+    SCWriteGitIgnore,
+    SCStageAll,
+    SCStageFile,
+    SCUnstageFile,
+    EnableGitTracking,
+    DisableGitTracking,
+    GetGitTrackingStatus,
+    ListGitTimeline,
+    GetGitCommitDiff,
+    GetCommitFileDiffs,
+    ManualGitCommit,
+    GetGitPendingChanges,
+    RestoreGitCommit,
+    RunGitTrackingMigration,
+};

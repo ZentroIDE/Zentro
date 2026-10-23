@@ -1,0 +1,325 @@
+// SPDX-License-Identifier: GPL-3.0-only
+
+package sqlite
+
+import (
+	"context"
+	"database/sql"
+	"fmt"
+	"log/slog"
+	"regexp"
+	"strings"
+	"time"
+
+	"zentro/internal/driver"
+	"zentro/internal/models"
+
+	_ "modernc.org/sqlite"
+)
+
+type SQLiteDriver struct{}
+
+func New() *SQLiteDriver {
+	return &SQLiteDriver{}
+}
+
+func (d *SQLiteDriver) Name() string { return "sqlite" }
+
+func (d *SQLiteDriver) Open(p *models.ConnectionProfile) (*sql.DB, error) {
+	db, err := sql.Open("sqlite", p.DBName)
+	if err != nil {
+		return nil, err
+	}
+	db.SetMaxOpenConns(2)
+	db.SetMaxIdleConns(1)
+	db.SetConnMaxLifetime(5 * time.Minute)
+	db.SetConnMaxIdleTime(2 * time.Minute)
+	return db, nil
+}
+
+func (d *SQLiteDriver) FriendlyError(err error) error {
+	if err == nil {
+		return nil
+	}
+	msg := strings.ToLower(err.Error())
+	switch {
+	case strings.Contains(msg, "unable to open database file"):
+		return fmt.Errorf("cannot open file - check the path and read permissions")
+	case strings.Contains(msg, "no such file or directory"):
+		return fmt.Errorf("file not found - check the database path")
+	case strings.Contains(msg, "database is locked"):
+		return fmt.Errorf("database is locked - another process may have it open")
+	case strings.Contains(msg, "readonly") || strings.Contains(msg, "read-only"):
+		return fmt.Errorf("database is read-only - check file permissions")
+	case strings.Contains(msg, "disk i/o error"):
+		return fmt.Errorf("disk I/O error - check storage availability")
+	default:
+		return fmt.Errorf("sqlite: %s", err.Error())
+	}
+}
+
+func (d *SQLiteDriver) FetchDatabases(ctx context.Context, db *sql.DB, currentDB string, showAllSchemas bool, logger *slog.Logger) ([]*models.DatabaseInfo, error) {
+	info := &models.DatabaseInfo{Name: currentDB}
+	schemas, err := d.FetchSchema(ctx, db, showAllSchemas, logger)
+	if err == nil {
+		info.Schemas = schemas
+	}
+	return []*models.DatabaseInfo{info}, nil
+}
+
+func (d *SQLiteDriver) FetchSchema(ctx context.Context, db *sql.DB, showAllSchemas bool, logger *slog.Logger) ([]*models.SchemaNode, error) {
+	node := models.NewSchemaNode("main")
+	rows, err := db.QueryContext(ctx, "SELECT name, type FROM sqlite_master WHERE type IN ('table','view') ORDER BY name")
+	if err != nil {
+		return nil, err
+	}
+	defer rows.Close()
+
+	for rows.Next() {
+		var name, tableType string
+		if rows.Scan(&name, &tableType) == nil {
+			if tableType == "view" {
+				node.Views = append(node.Views, name)
+			} else {
+				node.Tables = append(node.Tables, name)
+			}
+		}
+	}
+	return []*models.SchemaNode{node}, nil
+}
+
+func (d *SQLiteDriver) FetchTablePrimaryKeys(ctx context.Context, db *sql.DB, schema, table string) ([]string, error) {
+	query := fmt.Sprintf("PRAGMA table_info(%s)", table) // Table name should usually be escaped
+	rows, err := db.QueryContext(ctx, query)
+	if err != nil {
+		return nil, err
+	}
+	defer rows.Close()
+
+	var pks []string
+	for rows.Next() {
+		var cid int
+		var name, typ string
+		var notnull int
+		var dfltValue interface{}
+		var pk int
+		if rows.Scan(&cid, &name, &typ, &notnull, &dfltValue, &pk) == nil {
+			if pk > 0 {
+				pks = append(pks, name)
+			}
+		}
+	}
+	return pks, nil
+}
+
+func (d *SQLiteDriver) DefaultSchema() string { return "main" }
+
+// QuoteIdentifier double-quotes a name, doubling any embedded double quote.
+func (d *SQLiteDriver) QuoteIdentifier(name string) string {
+	return `"` + strings.ReplaceAll(name, `"`, `""`) + `"`
+}
+
+// CountReferencingRows counts child rows matching the given keys (? bind markers).
+func (d *SQLiteDriver) CountReferencingRows(ctx context.Context, db *sql.DB, schema, table string, columns []string, keys [][]string, limit int) (int64, bool, error) {
+	return driver.CountReferencingRowsWith(ctx, db, d, func(int) string { return "?" }, schema, table, columns, keys, limit)
+}
+
+func (d *SQLiteDriver) SupportsSessionSchema() bool { return false }
+
+func (d *SQLiteDriver) ApplySchemaContext(_ context.Context, _ driver.ContextExecutor, _ string) error {
+	return nil
+}
+
+func (d *SQLiteDriver) ResetSchemaContext(_ context.Context, _ driver.ContextExecutor) error {
+	return nil
+}
+
+// MaintenanceDBName is unsupported — a SQLite database is just a file, so
+// there is no server-level database concept to bootstrap against.
+func (d *SQLiteDriver) MaintenanceDBName() (string, error) {
+	return "", driver.ErrCreateDatabaseUnsupported
+}
+
+func (d *SQLiteDriver) InjectPageClause(query string, limit, offset int) string {
+	limitPattern := regexp.MustCompile(`(?i)\bLIMIT\b|\bOFFSET\b|\bTOP\b|\bFETCH\b`)
+	if limitPattern.MatchString(query) {
+		return query
+	}
+	trimmed := strings.TrimSpace(query)
+	if offset > 0 {
+		return trimmed + fmt.Sprintf(" LIMIT %d OFFSET %d", limit, offset)
+	}
+	return trimmed + fmt.Sprintf(" LIMIT %d", limit)
+}
+
+func (d *SQLiteDriver) FetchTableColumns(ctx context.Context, db *sql.DB, schema, table string) ([]*models.ColumnDef, error) {
+	query := fmt.Sprintf("PRAGMA table_info(%s)", table) // We already format without quotes in sqlite driver
+	rows, err := db.QueryContext(ctx, query)
+	if err != nil {
+		return nil, fmt.Errorf("sqlite: fetch columns: %w", err)
+	}
+	defer rows.Close()
+
+	var cols []*models.ColumnDef
+	for rows.Next() {
+		var cid int
+		var name, typ string
+		var notnull int
+		var dfltValue interface{}
+		var pk int
+		if err := rows.Scan(&cid, &name, &typ, &notnull, &dfltValue, &pk); err != nil {
+			return nil, err
+		}
+
+		defValStr := ""
+		if dfltValue != nil {
+			defValStr = fmt.Sprintf("%v", dfltValue)
+		}
+
+		cols = append(cols, &models.ColumnDef{
+			Name:         name,
+			DataType:     typ,
+			FullDataType: typ,
+			DefaultValue: defValStr,
+			IsNullable:   notnull == 0,
+			IsPrimaryKey: pk > 0,
+		})
+	}
+	return cols, nil
+}
+
+// AlterTableColumn is not supported by SQLite (no native ALTER COLUMN).
+// SQLite requires a full table recreation to alter columns. This returns a clear error.
+func (d *SQLiteDriver) AlterTableColumn(_ context.Context, _ *sql.DB, _, _ string, _, _ *models.ColumnDef) error {
+	return fmt.Errorf("sqlite: ALTER COLUMN is not supported — SQLite requires table recreation to alter columns")
+}
+
+// ReorderTableColumns is not supported by SQLite directly.
+func (d *SQLiteDriver) ReorderTableColumns(_ context.Context, _ *sql.DB, _, _ string, _ []string) error {
+	return fmt.Errorf("sqlite: column reorder is not supported — SQLite requires full table recreation")
+}
+
+// CreateDatabase is not applicable to SQLite: a "database" is a file, created
+// by picking a new file path, not by a SQL statement.
+func (d *SQLiteDriver) CreateDatabase(_ context.Context, _ *sql.DB, _ string) error {
+	return driver.ErrCreateDatabaseUnsupported
+}
+
+// AddTableColumn implements driver.SchemaFetcher.
+func (d *SQLiteDriver) AddTableColumn(ctx context.Context, db *sql.DB, schema, table string, col *models.ColumnDef) error {
+	// SQLite restriction: Can't add PK column via ALTER TABLE
+	if col.IsPrimaryKey {
+		return fmt.Errorf("sqlite: cannot add a PRIMARY KEY column via ALTER TABLE — SQLite requires table recreation")
+	}
+
+	qualified := fmt.Sprintf(`"%s"`, table)
+
+	nullability := ""
+	if !col.IsNullable {
+		nullability = " NOT NULL"
+	}
+
+	defaultValue := ""
+	if col.DefaultValue != "" {
+		defaultValue = " DEFAULT " + col.DefaultValue
+	}
+
+	sqlStr := fmt.Sprintf(
+		"ALTER TABLE %s ADD COLUMN \"%s\" %s%s%s",
+		qualified, col.Name, col.DataType, nullability, defaultValue,
+	)
+
+	if _, err := db.ExecContext(ctx, sqlStr); err != nil {
+		return fmt.Errorf("sqlite: add column: %w", err)
+	}
+	return nil
+}
+
+// DropTableColumn implements driver.SchemaFetcher.
+func (d *SQLiteDriver) DropTableColumn(ctx context.Context, db *sql.DB, schema, table, column string) error {
+	// Supported in SQLite >= 3.35.0
+	query := fmt.Sprintf("ALTER TABLE \"%s\" DROP COLUMN \"%s\"", table, column)
+	if _, err := db.ExecContext(ctx, query); err != nil {
+		return fmt.Errorf("sqlite: drop column (requires SQLite >= 3.35.0): %w", err)
+	}
+	return nil
+}
+
+// FetchTableRelationships implements driver.SchemaFetcher.
+func (d *SQLiteDriver) FetchTableRelationships(ctx context.Context, db *sql.DB, schema, table string) ([]models.TableRelationship, error) {
+	var rels []models.TableRelationship
+
+	// 1. Fetch outgoing keys
+	outQuery := fmt.Sprintf(`PRAGMA foreign_key_list("%s")`, table)
+	outRows, err := db.QueryContext(ctx, outQuery)
+	if err != nil {
+		return nil, fmt.Errorf("sqlite: pragma fg keys out: %w", err)
+	}
+	defer outRows.Close()
+
+	for outRows.Next() {
+		// PRAGMA foreign_key_list returns: id, seq, table, from, to, on_update, on_delete, match
+		var id, seq int
+		var targetTable, sourceColumn, targetColumn, onUpdate, onDelete, match string
+		if err := outRows.Scan(&id, &seq, &targetTable, &sourceColumn, &targetColumn, &onUpdate, &onDelete, &match); err != nil {
+			return nil, fmt.Errorf("sqlite: scan fg key out: %w", err)
+		}
+		rels = append(rels, models.TableRelationship{
+			ConstraintName: fmt.Sprintf("fk_%s_%s_%s", table, targetTable, sourceColumn),
+			SourceSchema:   schema,
+			SourceTable:    table,
+			SourceColumn:   sourceColumn,
+			TargetSchema:   schema,
+			TargetTable:    targetTable,
+			TargetColumn:   targetColumn,
+			OnDelete:       strings.ReplaceAll(strings.ToUpper(strings.TrimSpace(onDelete)), "_", " "),
+			OnUpdate:       strings.ReplaceAll(strings.ToUpper(strings.TrimSpace(onUpdate)), "_", " "),
+		})
+	}
+
+	// 2. Fetch incoming keys by checking all other tables
+	tablesQuery := `SELECT name FROM sqlite_master WHERE type = 'table' AND name NOT LIKE 'sqlite_%'`
+	tRows, err := db.QueryContext(ctx, tablesQuery)
+	if err != nil {
+		return nil, fmt.Errorf("sqlite: fetch tables for incoming rels: %w", err)
+	}
+
+	var allTables []string
+	for tRows.Next() {
+		var tName string
+		if err := tRows.Scan(&tName); err == nil && tName != table {
+			allTables = append(allTables, tName)
+		}
+	}
+	tRows.Close()
+
+	for _, t := range allTables {
+		inQuery := fmt.Sprintf(`PRAGMA foreign_key_list("%s")`, t)
+		inRows, err := db.QueryContext(ctx, inQuery)
+		if err != nil {
+			continue // ignore errors on single tables
+		}
+		for inRows.Next() {
+			var id, seq int
+			var targetTable, sourceColumn, targetColumn, onUpdate, onDelete, match string
+			if err := inRows.Scan(&id, &seq, &targetTable, &sourceColumn, &targetColumn, &onUpdate, &onDelete, &match); err == nil {
+				if targetTable == table {
+					rels = append(rels, models.TableRelationship{
+						ConstraintName: fmt.Sprintf("fk_%s_%s_%s", t, targetTable, sourceColumn),
+						SourceSchema:   schema,
+						SourceTable:    t,
+						SourceColumn:   sourceColumn,
+						TargetSchema:   schema,
+						TargetTable:    targetTable,
+						TargetColumn:   targetColumn,
+						OnDelete:       strings.ReplaceAll(strings.ToUpper(strings.TrimSpace(onDelete)), "_", " "),
+						OnUpdate:       strings.ReplaceAll(strings.ToUpper(strings.TrimSpace(onUpdate)), "_", " "),
+					})
+				}
+			}
+		}
+		inRows.Close()
+	}
+
+	return rels, nil
+}

@@ -1,0 +1,61 @@
+name: Public Tree
+
+# The core never references a symbol defined in a Pro file (ADR 0019,
+# "Boundary rule"). There is no build tag to enforce that at compile time, so
+# this job builds and tests the exact tree scripts/export-public.mjs would
+# hand to someone outside the company: every tracked file minus what
+# public-export.json denies (pro_*, pro/, frontend/src/pro/, ...). If core
+# code calls something that only exists in a Pro file, this job fails before
+# anyone outside does.
+
+on:
+  pull_request:
+    paths:
+      - 'internal/**'
+      - 'cmd/**'
+      - 'frontend/**'
+      - 'scripts/export-public.mjs'
+      - 'scripts/export-public-lib.mjs'
+      - 'public-export.json'
+      - 'go.mod'
+      - 'go.sum'
+      - '.github/workflows/public-tree.yml'
+  push:
+    branches:
+      - dev
+      - main
+    paths:
+      - 'internal/**'
+      - 'cmd/**'
+      - 'frontend/**'
+      - 'scripts/export-public.mjs'
+      - 'scripts/export-public-lib.mjs'
+      - 'public-export.json'
+      - 'go.mod'
+      - 'go.sum'
+      - '.github/workflows/public-tree.yml'
+
+concurrency:
+  group: ${{ github.workflow }}-${{ github.ref }}
+  cancel-in-progress: true
+
+jobs:
+  public-tree:
+    if: ${{ !(github.event_name == 'push' && github.ref == 'refs/heads/main' && github.event.repository.private) }}
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Setup Go
+        uses: actions/setup-go@v5
+        with:
+          go-version-file: go.mod
+
+      - name: Setup Node
+        uses: actions/setup-node@v4
+        with:
+          node-version: '20'
+
+      - name: Export, build and test the public tree
+        run: node scripts/export-public.mjs --out "$RUNNER_TEMP/public-tree" --verify --frontend

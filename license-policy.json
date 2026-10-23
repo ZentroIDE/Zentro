@@ -1,0 +1,85 @@
+{
+  "version": 1,
+  "description": "Third-party dependency license policy for Zentro. The core is licensed GPL-3.0-only; third-party code under strong copyleft licenses is incompatible and must be rejected unless an owner-approved exception is recorded.",
+  "allowedLicenses": [
+    "MIT",
+    "BSD-2-Clause",
+    "BSD-3-Clause",
+    "ISC",
+    "Apache-2.0",
+    "0BSD",
+    "Unlicense",
+    "CC0-1.0",
+    "MPL-2.0",
+    "OFL-1.1"
+  ],
+  "deniedLicenses": [
+    "GPL-1.0",
+    "GPL-1.0-only",
+    "GPL-1.0-or-later",
+    "GPL-2.0",
+    "GPL-2.0-only",
+    "GPL-2.0-or-later",
+    "GPL-3.0",
+    "GPL-3.0-only",
+    "GPL-3.0-or-later",
+    "AGPL-1.0",
+    "AGPL-1.0-only",
+    "AGPL-1.0-or-later",
+    "AGPL-3.0",
+    "AGPL-3.0-only",
+    "AGPL-3.0-or-later",
+    "LGPL-2.0",
+    "LGPL-2.0-only",
+    "LGPL-2.0-or-later",
+    "LGPL-2.1",
+    "LGPL-2.1-only",
+    "LGPL-2.1-or-later",
+    "LGPL-3.0",
+    "LGPL-3.0-only",
+    "LGPL-3.0-or-later",
+    "SSPL-1.0",
+    "BUSL-1.1",
+    "CPAL-1.0",
+    "OSL-1.0",
+    "OSL-1.1",
+    "OSL-2.0",
+    "OSL-2.1",
+    "OSL-3.0"
+  ],
+  "exceptions": [
+    {
+      "package": "modernc.org/mathutil",
+      "license": "BSD-3-Clause",
+      "reason": "go-licenses cannot auto-detect this module's BSD-3-Clause LICENSE file. The file was reviewed manually and matches the standard BSD-3-Clause text.",
+      "reviewedOn": "2026-10-17"
+    }
+  ],
+  "pro": {
+    "directory": "internal/pro/",
+    "note": "This directory will hold closed-source code. It does not exist yet. When it is added, no third-party copyleft license is permitted there, including weak file-level copyleft such as MPL-2.0: only permissive licenses may be used, because the closed-source Pro code can only be combined with GPL code that Zentro itself owns.",
+    "allowedLicenses": [
+      "MIT",
+      "BSD-2-Clause",
+      "BSD-3-Clause",
+      "ISC",
+      "Apache-2.0",
+      "0BSD",
+      "Unlicense",
+      "CC0-1.0",
+      "OFL-1.1"
+    ],
+    "deniedLicenses": [
+      "MPL-1.0",
+      "MPL-1.1",
+      "MPL-2.0",
+      "EPL-1.0",
+      "EPL-2.0",
+      "CDDL-1.0",
+      "CDDL-1.1",
+      "CPL-1.0",
+      "EUPL-1.1",
+      "EUPL-1.2"
+    ]
+  }
+}

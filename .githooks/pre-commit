@@ -1,0 +1,30 @@
+#!/usr/bin/env sh
+set -eu
+
+if [ "${SKIP_PRE_COMMIT_CHECKS:-0}" = "1" ]; then
+  echo "Skipping pre-commit checks because SKIP_PRE_COMMIT_CHECKS=1"
+  exit 0
+fi
+
+if command -v npm >/dev/null 2>&1; then
+  if ! command -v node >/dev/null 2>&1; then
+    echo "node is required to run pre-commit checks."
+    exit 1
+  fi
+  staged_files="$(git diff --cached --name-only --diff-filter=ACMR)"
+  npm run format
+  node scripts/normalize-line-endings.mjs
+  if [ -n "$staged_files" ]; then
+    printf '%s\n' "$staged_files" | while IFS= read -r file; do
+      [ -n "$file" ] || continue
+      if [ -e "$file" ]; then
+        git add -- "$file"
+      fi
+    done
+  fi
+  node scripts/verify-pre-commit.mjs
+  exit $?
+fi
+
+echo "npm is required to run pre-commit checks."
+exit 1

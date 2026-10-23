@@ -1,0 +1,9 @@
+#!/bin/bash
+# Runs as root during .pkg installation (installer scripts always run
+# elevated). Strips the com.apple.quarantine xattr the .pkg itself carried
+# from being downloaded, so once a user gets past the one Gatekeeper prompt
+# for the installer, the *installed* app never triggers it again - including
+# after future silent updates, since replacing files via `installer` doesn't
+# reintroduce the flag on them.
+xattr -dr com.apple.quarantine "/Applications/Zentro.app" 2>/dev/null || true
+exit 0

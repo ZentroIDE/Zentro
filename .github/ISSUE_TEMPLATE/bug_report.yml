@@ -1,0 +1,98 @@
+name: Bug Report
+description: Report a bug so we can reproduce and fix it
+title: "[Bug]: "
+labels: ["bug", "needs-triage"]
+body:
+  - type: markdown
+    attributes:
+      value: |
+        Thanks for reporting a bug. A single maintainer triages everything, so please
+        provide enough detail to reproduce and act on the report.
+  - type: checkboxes
+    id: searched
+    attributes:
+      label: Searched existing issues
+      description: Please search open and closed issues before opening a new one.
+      options:
+        - label: I searched existing issues and this is not a duplicate.
+          required: true
+  - type: input
+    id: version
+    attributes:
+      label: Zentro version
+      description: The version shown in the About screen.
+      placeholder: "0.9.0"
+    validations:
+      required: true
+  - type: dropdown
+    id: os
+    attributes:
+      label: Operating system
+      options:
+        - Windows
+        - macOS
+        - Linux
+    validations:
+      required: true
+  - type: dropdown
+    id: edition
+    attributes:
+      label: Edition
+      description: How did you get Zentro?
+      options:
+        - Official build
+        - Built from source (Community)
+    validations:
+      required: true
+  - type: dropdown
+    id: database
+    attributes:
+      label: Database engine
+      options:
+        - PostgreSQL
+        - MySQL
+        - SQL Server
+        - SQLite
+        - Not database related
+    validations:
+      required: true
+  - type: textarea
+    id: steps
+    attributes:
+      label: Steps to reproduce
+      description: Numbered steps that reliably trigger the bug.
+      placeholder: |
+        1. Go to '...'
+        2. Click on '...'
+        3. Execute query '...'
+        4. See error
+    validations:
+      required: true
+  - type: textarea
+    id: expected
+    attributes:
+      label: Expected behavior
+      description: What you expected to happen.
+    validations:
+      required: true
+  - type: textarea
+    id: actual
+    attributes:
+      label: Actual behavior
+      description: What actually happened instead.
+    validations:
+      required: true
+  - type: textarea
+    id: logs-screenshots
+    attributes:
+      label: Logs and screenshots
+      description: |
+        Optional. Attach screenshots, recordings, or logs that help explain the problem.
+        The log of the open project is `.zentro-tracking/runtime/app.log` inside the project folder.
+        Remove anything private from it before attaching.
+    validations:
+      required: false
+  - type: markdown
+    attributes:
+      value: |
+        **Important:** never paste passwords, connection strings, or query result data into this issue.

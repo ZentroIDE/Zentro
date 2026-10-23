@@ -1,0 +1,7 @@
+# One email per line: contributors who have signed the CLA (CLA.md) and may
+# have a PR from the public repo pulled back into this one.
+# scripts/pull-back-pr.mjs checks each patch's author email against this file
+# before `git am`. Lines starting with # are ignored.
+#
+# Until a CLA bot is wired up (see CONTRIBUTING.md), add a line by hand once
+# you've received a signed CLA from that contributor.

@@ -1,0 +1,613 @@
+/* Design Tokens v2: user-overridable → primitives → semantic → shadcn aliases */
+
+/* ─────────────────────────────────────────────
+   USER-OVERRIDABLE ENTRY POINTS
+   These are the only tokens users/settings should write to.
+   All semantic tokens derive from these.
+   ───────────────────────────────────────────── */
+:root {
+    --user-accent: #0e7451;
+    --user-font-sans:
+        -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Helvetica, Arial, sans-serif;
+    --user-font-mono: ui-monospace, 'Cascadia Code', Menlo, Consolas, monospace;
+    --user-font-size-base: 13px;
+}
+
+/* ─────────────────────────────────────────────
+   PRIMITIVE PALETTE (raw values — do not use directly in components)
+   ───────────────────────────────────────────── */
+:root {
+    --primitive-neutral-1000: #17191d;
+    --primitive-neutral-950: #20242a;
+    --primitive-neutral-900: #2a2f37;
+    --primitive-neutral-800: #363d48;
+    --primitive-neutral-700: #4a5462;
+    --primitive-neutral-500: #8a94a6;
+    --primitive-neutral-300: #d4d9e2;
+    --primitive-neutral-100: #f2f5fa;
+    --primitive-neutral-0: #ffffff;
+
+    --primitive-success-500: #4bb889;
+    --primitive-error-500: #df6b6b;
+    --primitive-warning-500: #f3ae48;
+}
+
+/* ─────────────────────────────────────────────
+   SEMANTIC TOKENS — DARK (default / :root)
+   ───────────────────────────────────────────── */
+:root {
+    /* Surfaces — VS Code Dark Modern */
+    --surface-app: #1f1f1f;
+    --surface-panel: #181818;
+    --surface-elevated: #2b2b2b;
+    --surface-overlay-card: #252526;
+
+    /* Content */
+    --content-primary: #cccccc;
+    --content-emphasized: #e8e8e8;
+    --content-secondary: #9d9d9d;
+    --content-muted: #6e7681;
+    --content-null: var(--content-muted);
+    --content-inverse: var(--primitive-neutral-0);
+
+    /* Borders */
+    --border-default: #2b2b2b52;
+    --border-subtle: color-mix(in srgb, var(--border-default) 40%, transparent);
+    /* Internal data-grid gridlines. Derived from --content-primary (not
+       --border-default) so it stays predictable across themes AND theme
+       presets — presets swap --border-default for an opaque colour, which
+       would otherwise make a color-mix of it read heavier than expected. */
+    --border-grid: color-mix(in srgb, var(--content-primary) 8%, transparent);
+    /* Panel-shell divider — solid hairline (no /opacity in markup). Derived from
+       --content-primary (not --border-default) for the same reason as
+       --border-grid above: presets swap --border-default for an opaque colour
+       (Solarized Dark -> base01 #586e75), which reads as a heavy seam when used
+       raw. An 8% mix of the body text colour gives every dark preset a hairline
+       of the same perceived weight — matching the light block. */
+    --border-panel: color-mix(in srgb, var(--content-primary) 8%, transparent);
+
+    /* Interactive — derives from user accent */
+    --interactive-primary: var(--user-accent);
+    --interactive-primary-hover: color-mix(in srgb, var(--user-accent) 85%, #000);
+    --interactive-text: #3ecf8e;
+    --focus-ring: color-mix(in srgb, var(--user-accent) 48%, transparent);
+    --focus-border-opacity: 0.65;
+
+    /* Status */
+    --status-success: #89d185;
+    --status-destructive: #c92a2a;
+    --status-warning: #cca700;
+    --status-info: var(--interactive-primary);
+
+    /* Overlays */
+    --overlay-backdrop: rgb(0 0 0 / 56%);
+    --overlay-backdrop-strong: rgb(0 0 0 / 68%);
+
+    /* Special */
+    --color-fk: var(--interactive-primary);
+
+    /* ── Typography ── */
+    --font-family-sans: var(--user-font-sans);
+    --font-family-mono: var(--user-font-mono);
+
+    /*
+     * Scale — 5 roles, relative to --user-font-size-base (default 13px, VS Code parity):
+     *   title:   ×1.385 ≈ 18px  — modal/sheet/drawer headings
+     *   section: ×1.077 ≈ 14px  — panel/section headings
+     *   body:    ×1     = 13px  — default UI text, descriptions
+     *   small:   ×1     = 13px  — controls, nav items, UI chrome (= body, VS Code parity)
+     *   label:   ×0.846 ≈ 11px  — form field labels, dense hints
+     *   code:    ×1     = 13px  — SQL/code (monospace, VS Code UI code parity)
+     */
+    --font-size-title: calc(var(--user-font-size-base) * 1.385);
+    --font-size-section: calc(var(--user-font-size-base) * 1.077);
+    --font-size-body: var(--user-font-size-base);
+    --font-size-small: var(--user-font-size-base);
+    --font-size-label: calc(var(--user-font-size-base) * 0.846);
+    --font-size-code: var(--user-font-size-base);
+
+    --line-height-title: 1.35;
+    --line-height-section: 1.35;
+    --line-height-body: 1.45;
+    --line-height-small: 1.4;
+    --line-height-label: 1.3;
+    --line-height-code: 1.4;
+
+    --font-weight-title: 500;
+    --font-weight-section: 500;
+    --font-weight-body: 400;
+    --font-weight-small: 400;
+    --font-weight-label: 500;
+    --font-weight-code: 400;
+
+    /* ── Spacing — compact baseline (4px) ── */
+    --space-0: 0;
+    --space-1: 4px;
+    --space-2: 8px;
+    --space-3: 12px;
+    --space-4: 16px;
+    --space-5: 20px;
+    --space-6: 24px;
+    --space-8: 32px;
+    --space-10: 40px;
+
+    /* ── Layout ── */
+    --layout-shell-gap: var(--space-2);
+    --layout-panel-padding: var(--space-3);
+    --layout-panel-gap: var(--space-2);
+    --layout-toolbar-height: 32px;
+    --layout-form-gap: var(--space-3);
+    --layout-form-row-gap: var(--space-2);
+    --layout-content-max-width: 1280px;
+
+    /* ── Control sizes — density-aware (compact default) ── */
+    --control-height-default: 24px;
+    --control-height-icon: 24px;
+    --control-height-micro: 20px;
+    --control-px-default: 8px;
+    --control-px-default-icon-end: 10px;
+    --control-px-micro: 6px;
+
+    /* ── Icon sizes ── */
+    --icon-size-xs: 14px;
+    --icon-size-sm: 16px;
+    --icon-size-md: 20px;
+    --icon-size-lg: 24px;
+
+    /* ── Radius ── */
+    --radius-scale-sm: 3px;
+    --radius-scale-md: 6px;
+    --radius-scale-lg: 10px;
+    --radius-scale-xl: 16px;
+
+    /* ── Elevation ── */
+    --elevation-sm: 0 1px 3px rgb(0 0 0 / 28%), 0 8px 18px rgb(0 0 0 / 16%);
+    --elevation-md: 0 2px 8px rgb(0 0 0 / 28%), 0 16px 30px rgb(0 0 0 / 24%);
+    --elevation-lg: 0 4px 16px rgb(0 0 0 / 34%), 0 24px 52px rgb(0 0 0 / 26%);
+
+    /* ── Motion ── */
+    --motion-fast: 120ms;
+    --motion-base: 180ms;
+    --motion-slow: 260ms;
+    --ease-standard: cubic-bezier(0.2, 0, 0, 1);
+
+    /* ── Z-index layers ── */
+    --layer-table-sticky: 1;
+    --layer-sticky: 10;
+    --layer-panel-overlay: 50;
+    --layer-drag: 100;
+    --layer-split-preview: 900;
+    --layer-popover: 1000;
+    --layer-dropdown: 1200;
+    --layer-toolbar: 1400;
+    --layer-overlay: 2000;
+    --layer-modal: 3000;
+    --layer-modal-confirm: 3500;
+    --layer-toast: 4000;
+    --layer-tooltip: 5000;
+    --layer-topmost: 9999;
+
+    /* ── Interactive State Tokens ── */
+
+    /* Hover — subtle bg on mouse over */
+    --state-hover-bg: color-mix(in srgb, var(--content-primary) 6%, transparent);
+
+    /* Active tab fill in the editor-style tab strip. Must read as a distinct
+       surface against the strip's own --card background in every theme —
+       --surface-app collapses to --card on the light presets, so tint --card
+       toward the body text colour instead (lighter on dark, darker on light). */
+    --tab-active-bg: color-mix(in srgb, var(--content-primary) 10%, var(--card));
+
+    /* Focus */
+    --state-focus-ring: var(--focus-ring);
+
+    /* Selected — item active in list/nav/tree */
+    --state-selected-bg: color-mix(in srgb, var(--interactive-primary) 12%, transparent);
+    --state-selected-text: var(--interactive-primary);
+    --state-selected-border: color-mix(in srgb, var(--interactive-primary) 35%, transparent);
+
+    /* Active/Pressed */
+    --state-active-bg: color-mix(in srgb, var(--interactive-primary) 18%, transparent);
+    --state-active-text: var(--interactive-primary);
+
+    /* Table row selected — lighter than selected (row is wide) */
+    --state-row-selected-bg: color-mix(in srgb, var(--interactive-primary) 8%, transparent);
+    --state-row-selected-accent: var(--interactive-primary);
+    --state-row-selected-solid-bg: var(--interactive-primary);
+    --state-row-selected-solid-text: var(--content-inverse);
+
+    /* Zebra striping — alternating data-grid rows. Kept below --state-hover-bg
+       (6%) so hover still reads on a striped row. */
+    --state-row-alt-bg: color-mix(in srgb, var(--content-primary) 4%, transparent);
+
+    /* Table cell selected — stronger than row (cell is small) */
+    --state-cell-selected-bg: color-mix(in srgb, var(--interactive-primary) 14%, transparent);
+    --state-cell-selected-border: color-mix(in srgb, var(--interactive-primary) 40%, transparent);
+
+    /* Data row states */
+    --state-dirty-bg: color-mix(in srgb, var(--status-warning) 22%, transparent);
+    --state-draft-bg: color-mix(in srgb, var(--status-success) 12%, transparent);
+    --state-draft-hover-bg: color-mix(in srgb, var(--status-success) 17%, transparent);
+    --state-draft-selected-bg: color-mix(in srgb, var(--status-success) 19%, transparent);
+    --state-deleted-bg: color-mix(in srgb, var(--status-destructive) 12%, transparent);
+    --state-drag-over-bg: color-mix(in srgb, var(--interactive-primary) 8%, transparent);
+    --state-drag-over-border: var(--interactive-primary);
+
+    /* Form control states */
+    --state-disabled-opacity: 0.5;
+    --state-destructive-bg: color-mix(in srgb, var(--status-destructive) 10%, transparent);
+    --state-success-bg: color-mix(in srgb, var(--status-success) 10%, transparent);
+    --state-success-border: color-mix(in srgb, var(--status-success) 36%, transparent);
+    --state-success-solid-bg: var(--status-success);
+    --state-success-solid-text: var(--content-inverse);
+    --state-warning-bg: color-mix(in srgb, var(--status-warning) 14%, transparent);
+    --state-warning-border: color-mix(in srgb, var(--status-warning) 36%, transparent);
+    --state-warning-solid-bg: var(--status-warning);
+    --state-warning-solid-text: var(--content-inverse);
+    --state-info-bg: color-mix(in srgb, var(--status-info) 12%, transparent);
+    --state-info-border: color-mix(in srgb, var(--status-info) 36%, transparent);
+    --state-info-solid-bg: var(--status-info);
+    --state-info-solid-text: var(--content-inverse);
+    --state-destructive-border: color-mix(in srgb, var(--status-destructive) 36%, transparent);
+    --state-destructive-solid-bg: var(--status-destructive);
+    --state-destructive-solid-text: var(--content-inverse);
+    --state-readonly-bg: color-mix(in srgb, var(--surface-elevated) 84%, transparent);
+    --state-readonly-border: color-mix(in srgb, var(--border-default) 72%, transparent);
+
+    /* Placeholder / loading */
+    --state-empty-text: var(--content-secondary);
+    --state-loading-text: var(--content-secondary);
+    --state-connecting-color: var(--status-success);
+
+    /* ── Skeleton / shimmer ── */
+    --skeleton-bg: var(--surface-elevated);
+    --skeleton-highlight: color-mix(in srgb, var(--content-primary) 6%, transparent);
+
+    /* ── Syntax highlighting (dark — VSCode Dark+) ── */
+    --syntax-key: #9cdcfe;
+    --syntax-string: #ce9178;
+    --syntax-number: #b5cea8;
+    --syntax-boolean: #569cd6;
+    --syntax-bracket: #d4d4d4;
+
+    /* ── Form semantic tokens ── */
+    --form-label-color: var(--content-primary);
+    --form-description-color: var(--content-secondary);
+
+    /* ── Inline alert tokens ── */
+    --alert-info-bg: color-mix(in srgb, var(--interactive-primary) 10%, transparent);
+    --alert-info-border: color-mix(in srgb, var(--interactive-primary) 30%, transparent);
+    /* success/warning/destructive: reuse --state-success-bg, --state-warning-bg, --state-destructive-bg */
+
+    /* ── Legacy aliases (backward compat — do not use in new code) ── */
+    --bg-primary: var(--surface-app);
+    --bg-secondary: var(--surface-panel);
+    --bg-tertiary: var(--surface-elevated);
+    --text-primary: var(--content-primary);
+    --text-secondary: var(--content-secondary);
+    --text-muted: var(--content-muted);
+    --accent-color: var(--interactive-primary);
+    --accent-hover: var(--interactive-primary-hover);
+    --border-color: var(--border-default);
+    --success-color: var(--status-success);
+    --warning-color: var(--status-warning);
+    --bg-main: var(--surface-app);
+
+    /* ── shadcn/ui semantic contract (dark default) ── */
+    --background: var(--surface-app);
+    --foreground: var(--content-primary);
+    --card: var(--surface-panel);
+    --card-foreground: var(--content-primary);
+    --popover: var(--surface-overlay-card);
+    --popover-foreground: var(--content-primary);
+    --primary: var(--interactive-primary);
+    --primary-foreground: var(--content-inverse);
+    --secondary: var(--surface-elevated);
+    --secondary-foreground: var(--content-primary);
+    --muted: color-mix(in srgb, var(--surface-elevated) 86%, transparent);
+    --muted-foreground: var(--content-secondary);
+    --accent: color-mix(in srgb, var(--interactive-primary) 20%, transparent);
+    --accent-foreground: var(--content-primary);
+    --destructive: var(--status-destructive);
+    --destructive-foreground: var(--content-inverse);
+    --border: var(--border-default);
+    --input: var(--border-default);
+    --ring: var(--focus-ring);
+    --radius: var(--radius-scale-md);
+
+    /* Sidebar — dedicated surface family, defaults mirror the current bg-card/--border-panel
+       look so rewiring Sidebar.tsx/SecondarySidebar.tsx below is a no-op visually. */
+    --sidebar: var(--card);
+    --sidebar-foreground: var(--card-foreground);
+    --sidebar-primary: var(--interactive-primary);
+    --sidebar-primary-foreground: var(--content-inverse);
+    --sidebar-accent: var(--accent);
+    --sidebar-accent-foreground: var(--accent-foreground);
+    --sidebar-border: var(--border-panel);
+    --sidebar-ring: var(--focus-ring);
+
+    /* Chart categorical palette — no chart feature consumes these yet; derived from
+       tokens already guaranteed distinct per preset (accent, one syntax color, and the
+       3 status colors) rather than syntax-string/number/boolean, which Solarized
+       intentionally sets to the same cyan for all three (would collapse 3 of 5 slots
+       to one color). */
+    --chart-1: var(--user-accent);
+    --chart-2: var(--syntax-key);
+    --chart-3: var(--status-success);
+    --chart-4: var(--status-warning);
+    --chart-5: var(--status-destructive);
+
+    /* ── Button component tokens (Primitive → Semantic → Component layer 3) ── */
+    --btn-primary-bg: var(--interactive-primary);
+    --btn-primary-bg-hover: var(--interactive-primary-hover);
+    --btn-primary-bg-active: color-mix(in srgb, var(--interactive-primary) 72%, #000);
+    --btn-primary-fg: var(--content-inverse);
+    --btn-secondary-bg: var(--surface-elevated);
+    --btn-secondary-bg-hover: color-mix(
+        in srgb,
+        var(--content-primary) 8%,
+        var(--surface-elevated)
+    );
+    --btn-secondary-bg-active: color-mix(
+        in srgb,
+        var(--content-primary) 16%,
+        var(--surface-elevated)
+    );
+    --btn-secondary-fg: var(--content-primary);
+    --btn-secondary-border: var(--border-default);
+    --btn-outline-fg: var(--interactive-text);
+    --btn-outline-border: var(--interactive-text);
+    --btn-outline-bg-hover: color-mix(in srgb, var(--interactive-text) 16%, transparent);
+    --btn-outline-bg-active: color-mix(in srgb, var(--interactive-text) 26%, transparent);
+    --btn-ghost-fg: var(--content-primary);
+    --btn-ghost-bg-hover: color-mix(in srgb, var(--content-primary) 10%, transparent);
+    --btn-ghost-bg-active: color-mix(in srgb, var(--content-primary) 18%, transparent);
+    --btn-link-fg: var(--interactive-text);
+    --btn-link-fg-hover: color-mix(in srgb, var(--interactive-text) 80%, #000);
+    --btn-destructive-bg: var(--state-destructive-solid-bg);
+    --btn-destructive-bg-hover: color-mix(in srgb, var(--btn-destructive-bg) 85%, #000);
+    --btn-destructive-bg-active: color-mix(in srgb, var(--btn-destructive-bg) 72%, #000);
+    --btn-destructive-fg: var(--state-destructive-solid-text);
+    --btn-focus-ring: color-mix(in srgb, var(--interactive-text) 45%, transparent);
+    --btn-radius: var(--radius-scale-sm);
+}
+
+/* ─────────────────────────────────────────────
+   DENSITY OVERRIDES
+   ───────────────────────────────────────────── */
+[data-density='comfortable'] {
+    --control-height-default: 28px;
+    --control-height-icon: 28px;
+    --control-height-micro: 24px;
+    --control-px-default: 10px;
+    --control-px-default-icon-end: 12px;
+    --control-px-micro: 8px;
+    --layout-toolbar-height: 40px;
+    --layout-panel-padding: 14px;
+    --space-1: 5px;
+    --space-2: 10px;
+    --space-3: 14px;
+    --space-4: 18px;
+}
+
+[data-density='spacious'] {
+    --control-height-default: 32px;
+    --control-height-icon: 32px;
+    --control-height-micro: 28px;
+    --control-px-default: 12px;
+    --control-px-default-icon-end: 14px;
+    --control-px-micro: 10px;
+    --layout-toolbar-height: 44px;
+    --layout-panel-padding: 16px;
+    --space-1: 6px;
+    --space-2: 12px;
+    --space-3: 16px;
+    --space-4: 20px;
+}
+
+/* ─────────────────────────────────────────────
+   LIGHT THEME OVERRIDES
+   ───────────────────────────────────────────── */
+[data-theme='light'] {
+    --user-accent: #0e7451;
+
+    /* Surfaces — VS Code Light Modern */
+    --surface-app: #ffffff;
+    --surface-panel: #f8f8f8;
+    --surface-elevated: #f3f3f3;
+    --surface-overlay-card: #ffffff;
+
+    /* Content */
+    --content-primary: #3b3b3b;
+    --content-emphasized: #1f1f1f;
+    --content-secondary: #6b6b6b;
+    --content-muted: #8b8b8b;
+    --content-inverse: #ffffff;
+
+    /* Borders */
+    --border-default: #e5e5e5;
+    --border-subtle: color-mix(in srgb, var(--border-default) 72%, transparent);
+    /* Internal data-grid gridlines — see the dark-block note above. */
+    --border-grid: color-mix(in srgb, var(--content-primary) 8%, transparent);
+    /* Panel-shell divider. --border-default (#e5e5e5) is a near-invisible
+       hairline on a white card, and light presets set --card == --surface-app
+       so there is no fill contrast to fall back on either. Derive from the body
+       text colour instead: every light preset (Zentro Light #3b3b3b, Solarized
+       Light #657b83, …) then gets a seam of the same perceived weight —
+       matching the divider Solarized Light already shows. */
+    --border-panel: color-mix(in srgb, var(--content-primary) 8%, transparent);
+
+    /* Interactive */
+    --interactive-primary: var(--user-accent);
+    --interactive-primary-hover: color-mix(in srgb, var(--user-accent) 85%, #000);
+    --interactive-text: var(--interactive-primary);
+    --focus-ring: color-mix(in srgb, var(--user-accent) 34%, transparent);
+
+    /* Status */
+    --status-success: #388a34;
+    --status-destructive: #cd3131;
+    --status-warning: #bf8803;
+    --status-info: var(--interactive-primary);
+
+    /* Overlays */
+    --overlay-backdrop: rgb(0 0 0 / 30%);
+    --overlay-backdrop-strong: rgb(0 0 0 / 44%);
+
+    /* Elevation */
+    --elevation-sm: 0 1px 3px rgb(16 28 46 / 10%), 0 6px 18px rgb(16 28 46 / 8%);
+    --elevation-md: 0 2px 8px rgb(16 28 46 / 12%), 0 16px 28px rgb(16 28 46 / 12%);
+    --elevation-lg: 0 6px 18px rgb(16 28 46 / 14%), 0 28px 56px rgb(16 28 46 / 16%);
+
+    /* State tokens — heavier opacity needed on light backgrounds */
+    --state-hover-bg: color-mix(in srgb, var(--content-primary) 7%, transparent);
+    --tab-active-bg: color-mix(in srgb, var(--content-primary) 10%, var(--card));
+    --state-selected-bg: color-mix(in srgb, var(--interactive-primary) 14%, transparent);
+    --state-active-bg: color-mix(in srgb, var(--interactive-primary) 20%, transparent);
+    --state-row-selected-bg: color-mix(in srgb, var(--interactive-primary) 10%, transparent);
+    --state-cell-selected-bg: color-mix(in srgb, var(--interactive-primary) 16%, transparent);
+    --state-dirty-bg: color-mix(in srgb, var(--status-warning) 28%, transparent);
+    --state-draft-bg: color-mix(in srgb, var(--status-success) 14%, transparent);
+    --state-draft-hover-bg: color-mix(in srgb, var(--status-success) 20%, transparent);
+    --state-draft-selected-bg: color-mix(in srgb, var(--status-success) 22%, transparent);
+    --state-deleted-bg: color-mix(in srgb, var(--status-destructive) 14%, transparent);
+    --state-destructive-bg: color-mix(in srgb, var(--status-destructive) 14%, transparent);
+    --state-success-bg: color-mix(in srgb, var(--status-success) 14%, transparent);
+    --state-warning-bg: color-mix(in srgb, var(--status-warning) 16%, transparent);
+    --state-success-border: color-mix(in srgb, var(--status-success) 42%, transparent);
+    --state-warning-border: color-mix(in srgb, var(--status-warning) 42%, transparent);
+    --state-destructive-border: color-mix(in srgb, var(--status-destructive) 42%, transparent);
+    --state-success-solid-bg: var(--status-success);
+    --state-success-solid-text: var(--content-inverse);
+    --state-warning-solid-bg: var(--status-warning);
+    --state-warning-solid-text: var(--content-inverse);
+    --state-info-bg: color-mix(in srgb, var(--status-info) 14%, transparent);
+    --state-info-border: color-mix(in srgb, var(--status-info) 42%, transparent);
+    --state-info-solid-bg: var(--status-info);
+    --state-info-solid-text: var(--content-inverse);
+    --state-destructive-solid-bg: var(--status-destructive);
+    --state-destructive-solid-text: var(--content-inverse);
+    --state-readonly-bg: color-mix(in srgb, var(--surface-elevated) 90%, transparent);
+    --state-readonly-border: color-mix(in srgb, var(--border-default) 78%, transparent);
+
+    /* Skeleton */
+    --skeleton-highlight: color-mix(in srgb, var(--content-primary) 10%, transparent);
+
+    /* Syntax highlighting (light — VSCode Light+) */
+    --syntax-key: #0451a5;
+    --syntax-string: #a31515;
+    --syntax-number: #098658;
+    --syntax-boolean: #0000ff;
+    --syntax-bracket: #333333;
+
+    /* shadcn/ui semantic contract (light override) */
+    /* Mirror the dark contract: --background tracks the active preset's
+       --surface-app so a non-white light preset (e.g. Solarized Light, whose
+       app surface is base3 #fdf6e3) paints its own palette instead of hard
+       white. For the VS Code Light preset --surface-app is #ffffff, so this is
+       a no-op there. */
+    --background: var(--surface-app);
+    --foreground: var(--content-primary);
+    --card: var(--surface-app);
+    --card-foreground: var(--content-primary);
+    --popover: var(--surface-overlay-card);
+    --popover-foreground: var(--content-primary);
+    --primary: var(--interactive-primary);
+    --primary-foreground: var(--content-inverse);
+    --secondary: var(--surface-elevated);
+    --secondary-foreground: var(--content-primary);
+    --muted: color-mix(in srgb, var(--surface-elevated) 88%, transparent);
+    --muted-foreground: var(--content-secondary);
+    --accent: color-mix(in srgb, var(--interactive-primary) 16%, transparent);
+    --accent-foreground: var(--content-primary);
+    --destructive: var(--status-destructive);
+    --destructive-foreground: var(--content-inverse);
+    --border: var(--border-default);
+    --input: var(--border-default);
+    --ring: var(--focus-ring);
+    --radius: var(--radius-scale-md);
+
+    /* ── Button component tokens (Primitive → Semantic → Component layer 3) ── */
+    --btn-primary-bg: var(--interactive-primary);
+    --btn-primary-bg-hover: var(--interactive-primary-hover);
+    --btn-primary-bg-active: color-mix(in srgb, var(--interactive-primary) 72%, #000);
+    --btn-primary-fg: var(--content-inverse);
+    --btn-secondary-bg: var(--surface-elevated);
+    --btn-secondary-bg-hover: color-mix(
+        in srgb,
+        var(--content-primary) 8%,
+        var(--surface-elevated)
+    );
+    --btn-secondary-bg-active: color-mix(
+        in srgb,
+        var(--content-primary) 16%,
+        var(--surface-elevated)
+    );
+    --btn-secondary-fg: var(--content-primary);
+    --btn-secondary-border: var(--border-default);
+    --btn-outline-fg: var(--interactive-text);
+    --btn-outline-border: var(--interactive-text);
+    --btn-outline-bg-hover: color-mix(in srgb, var(--interactive-text) 16%, transparent);
+    --btn-outline-bg-active: color-mix(in srgb, var(--interactive-text) 26%, transparent);
+    --btn-ghost-fg: var(--content-primary);
+    --btn-ghost-bg-hover: color-mix(in srgb, var(--content-primary) 10%, transparent);
+    --btn-ghost-bg-active: color-mix(in srgb, var(--content-primary) 18%, transparent);
+    --btn-link-fg: var(--interactive-text);
+    --btn-link-fg-hover: color-mix(in srgb, var(--interactive-text) 80%, #000);
+    --btn-destructive-bg: var(--state-destructive-solid-bg);
+    --btn-destructive-bg-hover: color-mix(in srgb, var(--btn-destructive-bg) 85%, #000);
+    --btn-destructive-bg-active: color-mix(in srgb, var(--btn-destructive-bg) 72%, #000);
+    --btn-destructive-fg: var(--state-destructive-solid-text);
+    --btn-focus-ring: color-mix(in srgb, var(--interactive-text) 45%, transparent);
+    --btn-radius: var(--radius-scale-sm);
+}
+
+/* ─────────────────────────────────────────────
+   ENVIRONMENT SAFETY TINT
+   Ambient wash for protected environments (staging/production) so the risk
+   stays visible app-wide, not just in the toolbar badge.
+   data-env-tint is set by useEnvironmentTint.
+   ───────────────────────────────────────────── */
+:root[data-env-tint='sta'] {
+    --background: color-mix(in srgb, var(--status-warning) 6%, var(--surface-app));
+}
+
+:root[data-env-tint='pro'] {
+    --background: color-mix(in srgb, var(--status-destructive) 6%, var(--surface-app));
+}
+
+[data-theme='light'][data-env-tint='sta'] {
+    --background: color-mix(in srgb, var(--status-warning) 8%, var(--surface-app));
+}
+
+[data-theme='light'][data-env-tint='pro'] {
+    --background: color-mix(in srgb, var(--status-destructive) 8%, var(--surface-app));
+}
+
+/* ── AI assistant loading shimmer ── */
+@keyframes ai-shimmer {
+    0% {
+        background-position: -200% 0;
+    }
+    100% {
+        background-position: 200% 0;
+    }
+}
+.ai-shimmer {
+    background: linear-gradient(
+            90deg,
+            transparent 0%,
+            color-mix(in srgb, currentColor 14%, transparent) 50%,
+            transparent 100%
+        )
+        no-repeat;
+    background-color: color-mix(in srgb, currentColor 8%, transparent);
+    background-size: 200% 100%;
+    animation: ai-shimmer 1.4s ease-in-out infinite;
+    border-radius: 4px;
+    color: var(--muted-foreground);
+}
+@media (prefers-reduced-motion: reduce) {
+    .ai-shimmer {
+        animation: none;
+    }
+}

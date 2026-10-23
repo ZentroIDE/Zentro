@@ -1,0 +1,38 @@
+# Build outputs
+build/bin/
+frontend/dist/
+frontend/coverage/
+coverage-backend.out
+*.exe
+
+# Node
+node_modules/
+frontend/node_modules/
+frontend/.env
+.env
+.env.txt
+
+# Go
+.gocache/
+# IDE
+.vscode/
+.idea/
+*.swp
+
+# OS
+.DS_Store
+Thumbs.db
+
+# Local logs
+zentro.log
+
+# Rendered GitHub Release body (generated in CI from release-notes/v*.md)
+RELEASE_BODY.md
+
+# Local notes
+.local/
+
+# Claude Code runtime artifacts (keep .claude/skills/ tracked)
+.claude/worktrees/
+.claude/scheduled_tasks.lock
+.claude/settings.local.json

@@ -1,0 +1,246 @@
+// SPDX-License-Identifier: GPL-3.0-only
+
+import React, { useEffect, useState } from 'react';
+import { Pencil, Trash2 } from 'lucide-react';
+import { useConnectionStore } from '../../stores/connectionStore';
+import { getApiGateway } from '../../platform/apiGatewayRuntime';
+import { unwrapOrThrow } from '../../shared/kernel';
+import { cn } from '../../lib/cn';
+import { getErrorMessage } from '../../lib/errors';
+import { Button, Spinner } from '../ui';
+import { interactiveSelected } from '../ui/contract';
+
+interface ConnectionPickerProps {
+    onClose: () => void;
+    anchorRef: React.RefObject<HTMLDivElement | null>;
+    onEditConnection?: (name: string) => void | Promise<void>;
+    onDeleteConnection?: (name: string) => void | Promise<void>;
+}
+
+export const ConnectionPicker: React.FC<ConnectionPickerProps> = ({
+    onClose,
+    anchorRef,
+    onEditConnection,
+    onDeleteConnection,
+}) => {
+    const { connections, databases, activeProfile } = useConnectionStore();
+
+    // Track which connection is "previewed" in right column
+    const [selectedConn, setSelectedConn] = useState<string>(activeProfile?.name ?? '');
+    const [connecting, setConnecting] = useState(false);
+    const [error, setError] = useState<string | null>(null);
+    const [deletingConnectionName, setDeletingConnectionName] = useState<string | null>(null);
+
+    // Databases to show: only from active profile (the backend owns this list)
+    // After Connect(), the store gets updated via event, so we reactively re-render.
+    const isSelectedActive = selectedConn === activeProfile?.name;
+    const pickerDbs = isSelectedActive ? databases : [];
+
+    const handleSelectConn = async (name: string) => {
+        setError(null);
+        setSelectedConn(name);
+        if (name === activeProfile?.name) return;
+
+        // Auto-connect to this server so databases load on the right
+        setConnecting(true);
+        try {
+            unwrapOrThrow(await getApiGateway().connection.connect(name));
+            // After connect the store will update activeProfile + databases via event
+        } catch (err: unknown) {
+            console.error('ConnectionPicker: connect failed:', err);
+            setError(getErrorMessage(err));
+        } finally {
+            setConnecting(false);
+        }
+    };
+
+    const handleSelectDb = async (dbName: string) => {
+        onClose();
+        if (activeProfile?.db_name === dbName) return;
+        try {
+            unwrapOrThrow(await getApiGateway().connection.switchDatabase(dbName));
+        } catch (err) {
+            console.error('ConnectionPicker: switch db failed:', err);
+        }
+    };
+
+    const handleEditConnection = (event: React.MouseEvent, name: string) => {
+        event.stopPropagation();
+        void onEditConnection?.(name);
+    };
+
+    const handleDeleteConnection = async (event: React.MouseEvent, name: string) => {
+        event.stopPropagation();
+        if (!onDeleteConnection) return;
+        setDeletingConnectionName(name);
+        try {
+            await onDeleteConnection(name);
+        } finally {
+            setDeletingConnectionName(current => (current === name ? null : current));
+        }
+    };
+
+    // Sync selected conn when activeProfile changes (after connect resolves)
+    useEffect(() => {
+        if (activeProfile?.name) setSelectedConn(activeProfile.name);
+    }, [activeProfile?.name]);
+
+    // Close on Escape
+    useEffect(() => {
+        const onKey = (e: KeyboardEvent) => {
+            if (e.key === 'Escape') onClose();
+        };
+        window.addEventListener('keydown', onKey);
+        return () => window.removeEventListener('keydown', onKey);
+    }, [onClose]);
+
+    // Position below the anchor
+    const anchorRect = anchorRef.current?.getBoundingClientRect();
+    const top = anchorRect ? anchorRect.bottom + 8 : 40;
+    const left = anchorRect ? anchorRect.left + anchorRect.width / 2 : '50%';
+
+    const listItemClass =
+        'group flex items-center gap-2 border-b border-border/30 last:border-none';
+
+    return (
+        <>
+            {/* Overlay */}
+            <div
+                className='fixed inset-0 z-overlay bg-overlay backdrop-blur-[2px]'
+                onClick={onClose}
+            />
+
+            {/* Panel */}
+            <div
+                className='fixed z-modal flex bg-card border border-border rounded-md shadow-elevation-lg overflow-hidden min-w-[520px] max-h-[400px] animate-in fade-in duration-150'
+                style={{ top, left, transform: 'translateX(-50%)' }}
+                onClick={e => e.stopPropagation()}
+            >
+                {/* Connections column */}
+                <div className='flex flex-col flex-1 min-w-0 overflow-hidden'>
+                    <div className='px-3.5 py-2.5 text-label  tracking-[0.08em] text-muted-foreground bg-muted border-b border-border shrink-0'>
+                        Connection
+                    </div>
+                    <div className='overflow-y-auto flex-1'>
+                        {connections.map(conn => {
+                            const isSelected = selectedConn === conn.name;
+                            const isActive = activeProfile?.name === conn.name;
+                            return (
+                                <div
+                                    key={conn.name}
+                                    className={cn(
+                                        listItemClass,
+                                        isSelected && interactiveSelected,
+                                        isActive && 'border-l-2 border-l-accent bg-accent/10',
+                                    )}
+                                >
+                                    <Button
+                                        type='button'
+                                        variant='ghost'
+                                        className={cn(
+                                            'h-auto flex-1 justify-start rounded-none px-3.5 py-2 text-small font-normal',
+                                            isActive ? 'text-foreground' : 'text-muted-foreground',
+                                        )}
+                                        onClick={() => {
+                                            void handleSelectConn(conn.name);
+                                        }}
+                                    >
+                                        <span className='min-w-0 truncate'>{conn.name}</span>
+                                    </Button>
+                                    {(onEditConnection || onDeleteConnection) && (
+                                        <span className='mr-1 flex shrink-0 items-center gap-1 opacity-0 transition-opacity duration-100 group-hover:opacity-100'>
+                                            {onEditConnection && (
+                                                <Button
+                                                    type='button'
+                                                    variant='ghost'
+                                                    size='icon'
+                                                    className='h-5 w-5 text-muted-foreground ui-interactive-surface'
+                                                    onClick={event =>
+                                                        handleEditConnection(event, conn.name)
+                                                    }
+                                                    title={`Edit ${conn.name}`}
+                                                >
+                                                    <Pencil size={11} />
+                                                </Button>
+                                            )}
+                                            {onDeleteConnection && (
+                                                <Button
+                                                    type='button'
+                                                    variant='ghost'
+                                                    size='icon'
+                                                    className='h-5 w-5 text-muted-foreground transition-colors ui-interactive-ghost-destructive disabled:cursor-not-allowed disabled:opacity-60'
+                                                    onClick={event => {
+                                                        void handleDeleteConnection(
+                                                            event,
+                                                            conn.name,
+                                                        );
+                                                    }}
+                                                    title={`Delete ${conn.name}`}
+                                                    disabled={deletingConnectionName === conn.name}
+                                                >
+                                                    {deletingConnectionName === conn.name ? (
+                                                        <Spinner size={10} />
+                                                    ) : (
+                                                        <Trash2 size={11} />
+                                                    )}
+                                                </Button>
+                                            )}
+                                        </span>
+                                    )}
+                                </div>
+                            );
+                        })}
+                    </div>
+                </div>
+
+                {/* Divider */}
+                <div className='w-[1px] bg-border shrink-0' />
+
+                {/* Databases column */}
+                <div className='flex flex-col flex-1 min-w-0 overflow-hidden'>
+                    <div className='px-3.5 py-2.5 text-label  tracking-[0.08em] text-muted-foreground bg-muted border-b border-border shrink-0'>
+                        Database
+                    </div>
+                    <div className='overflow-y-auto flex-1'>
+                        {connecting ? (
+                            <div className='px-3.5 py-4 text-small text-muted-foreground flex items-center gap-2'>
+                                <Spinner size={14} className='opacity-60' />
+                                Connecting…
+                            </div>
+                        ) : error ? (
+                            <div className='px-3.5 py-3 text-small text-destructive whitespace-normal leading-[1.4] text-center'>
+                                {error}
+                            </div>
+                        ) : pickerDbs.length === 0 ? (
+                            <div className='px-3.5 py-4 text-small text-muted-foreground'>
+                                No databases
+                            </div>
+                        ) : (
+                            pickerDbs.map(db => {
+                                const isActive = activeProfile?.db_name === db;
+                                return (
+                                    <Button
+                                        key={db}
+                                        type='button'
+                                        variant='ghost'
+                                        className={cn(
+                                            'h-auto w-full justify-start rounded-none border-b border-border/30 px-3.5 py-2 text-small font-normal last:border-none',
+                                            isActive
+                                                ? 'border-l-2 border-l-accent bg-accent/10 text-foreground'
+                                                : 'text-muted-foreground',
+                                        )}
+                                        onClick={() => {
+                                            void handleSelectDb(db);
+                                        }}
+                                    >
+                                        {db}
+                                    </Button>
+                                );
+                            })
+                        )}
+                    </div>
+                </div>
+            </div>
+        </>
+    );
+};

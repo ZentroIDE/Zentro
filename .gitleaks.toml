@@ -1,0 +1,13 @@
+title = "Zentro gitleaks config"
+
+[extend]
+useDefault = true
+
+[allowlist]
+description = "Known false positives"
+# internal/app/ai_tools_context_test.go deliberately declares fake connection
+# credentials as fixtures, to prove the AI assistant's context never leaks a
+# real one. They look like secrets on purpose; they never were one.
+paths = [
+  '''internal/app/ai_tools_context_test\.go''',
+]

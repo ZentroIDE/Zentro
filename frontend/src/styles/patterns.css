@@ -1,0 +1,749 @@
+/* UI System Pattern v1 primitives for shell-level composition */
+
+.ui-shell {
+    display: grid;
+    grid-template-rows: var(--layout-toolbar-height) minmax(0, 1fr);
+    height: 100%;
+    gap: var(--layout-shell-gap);
+    background: var(--surface-app);
+}
+
+.ui-shell-header {
+    height: var(--layout-toolbar-height);
+    border-bottom: 1px solid var(--border-subtle);
+    background: var(--surface-panel);
+}
+
+.ui-shell-body {
+    min-height: 0;
+    display: grid;
+    grid-template-columns: minmax(180px, 280px) minmax(0, 1fr);
+    gap: var(--layout-shell-gap);
+}
+
+.ui-panel {
+    min-height: 0;
+    border-radius: var(--radius-scale-md);
+    padding: var(--layout-panel-padding);
+    display: flex;
+    flex-direction: column;
+    gap: var(--layout-panel-gap);
+}
+
+.ui-content-region {
+    min-height: 0;
+    padding: var(--space-3);
+    max-width: var(--layout-content-max-width);
+}
+
+.ui-form {
+    display: grid;
+    gap: var(--layout-form-gap);
+}
+
+.ui-form-row {
+    display: grid;
+    gap: var(--layout-form-row-gap);
+}
+
+.ui-form-actions {
+    display: flex;
+    align-items: center;
+    justify-content: flex-end;
+    gap: var(--space-2);
+}
+
+.ui-empty-state,
+.ui-loading-state,
+.ui-error-state {
+    display: grid;
+    place-items: center;
+    min-height: 120px;
+    padding: var(--space-4);
+    border-radius: var(--radius-scale-md);
+    text-align: center;
+}
+
+.ui-empty-state {
+    color: var(--state-empty-text);
+    background: color-mix(in srgb, var(--surface-elevated) 75%, transparent);
+}
+
+.ui-loading-state {
+    color: var(--state-loading-text);
+    background: color-mix(in srgb, var(--surface-elevated) 75%, transparent);
+}
+
+.ui-error-state {
+    color: var(--content-primary);
+    border: 1px solid var(--status-destructive);
+    background: var(--state-destructive-bg);
+}
+
+/* Typography roles — mirrors the 5-role scale in tokens.css */
+.ui-text-title {
+    font-size: var(--font-size-title);
+    line-height: var(--line-height-title);
+    font-weight: var(--font-weight-title);
+}
+
+/* .ui-text-section {
+    font-size: var(--font-size-section);
+    line-height: var(--line-height-section);
+    font-weight: var(--font-weight-section);
+} */
+
+.ui-text-body {
+    font-size: var(--font-size-body);
+    line-height: var(--line-height-body);
+    font-weight: var(--font-weight-body);
+}
+
+.ui-text-small {
+    font-size: var(--font-size-small);
+    line-height: var(--line-height-small);
+    font-weight: var(--font-weight-small);
+}
+
+.ui-text-label {
+    font-size: var(--font-size-label);
+    line-height: var(--line-height-label);
+    font-weight: var(--font-weight-label);
+}
+
+/* Decorative style — uppercase chip/badge/tag text, not a scale role */
+.ui-text-overline {
+    font-size: var(--font-size-label);
+    line-height: var(--line-height-label);
+    font-weight: var(--font-weight-label);
+    text-transform: uppercase;
+    letter-spacing: 0.04em;
+}
+
+.ui-text-code {
+    font-size: var(--font-size-code);
+    line-height: var(--line-height-code);
+    font-family: var(--font-family-mono);
+    font-weight: var(--font-weight-code);
+}
+
+/* Interaction states */
+.ui-state-hover:hover {
+    background: var(--state-hover-bg);
+}
+
+.ui-state-disabled,
+.ui-state-disabled:disabled {
+    opacity: var(--state-disabled-opacity);
+    pointer-events: none;
+}
+
+.ui-focus-ring:focus-visible {
+    outline: none;
+    box-shadow: 0 0 0 2px var(--state-focus-ring);
+}
+
+.ui-interactive-surface,
+.ui-interactive-selectable,
+.ui-interactive-icon-action,
+.ui-interactive-tab-trigger,
+.ui-interactive-menu-item,
+.ui-interactive-menu-item-destructive,
+.ui-interactive-command-item,
+.ui-interactive-table-row,
+.ui-control-surface,
+.ui-control-emphasis,
+.ui-control-outline,
+.ui-control-ghost,
+.ui-control-destructive,
+.ui-control-success,
+.ui-control-warning,
+.ui-control-info,
+.ui-control-link,
+.ui-btn-emphasis,
+.ui-btn-surface,
+.ui-btn-outline,
+.ui-btn-ghost,
+.ui-btn-link,
+.ui-btn-destructive,
+.ui-interactive-ghost-field,
+.ui-interactive-checked-control {
+    transition:
+        background-color var(--motion-fast) var(--ease-standard),
+        color var(--motion-fast) var(--ease-standard),
+        border-color var(--motion-fast) var(--ease-standard),
+        opacity var(--motion-fast) var(--ease-standard);
+}
+
+.ui-interactive-surface {
+    color: var(--content-secondary);
+}
+
+.ui-interactive-surface:hover,
+.ui-interactive-surface:focus-visible {
+    background: var(--state-hover-bg);
+    color: var(--content-primary);
+}
+
+.ui-interactive-selectable {
+    color: var(--content-primary);
+}
+
+.ui-interactive-selectable:hover,
+.ui-interactive-selectable:focus-visible {
+    background: var(--state-hover-bg);
+    color: var(--content-primary);
+}
+
+.ui-interactive-selected.ui-interactive-selected {
+    background: var(--state-selected-bg);
+    color: var(--state-selected-text);
+}
+
+.ui-interactive-selected.ui-interactive-selected:hover,
+.ui-interactive-selected.ui-interactive-selected:focus-visible {
+    background: var(--state-selected-bg);
+    color: var(--state-selected-text);
+}
+
+.ui-interactive-active {
+    background: var(--state-active-bg);
+    color: var(--content-primary);
+}
+
+.ui-interactive-icon-action {
+    color: var(--content-secondary);
+}
+
+.ui-interactive-icon-action:hover,
+.ui-interactive-icon-action:focus-visible {
+    background: var(--state-hover-bg);
+    color: var(--content-primary);
+}
+
+.ui-interactive-destructive {
+    color: var(--status-destructive);
+    background-color: var(--state-destructive-bg);
+}
+
+.ui-interactive-destructive:hover,
+.ui-interactive-destructive:focus-visible {
+    background: var(--state-destructive-bg);
+    color: var(--status-destructive);
+}
+
+.ui-interactive-success {
+    color: var(--status-success);
+}
+
+.ui-interactive-success:hover,
+.ui-interactive-success:focus-visible {
+    background: var(--state-success-bg);
+    color: var(--status-success);
+}
+
+.ui-interactive-warning {
+    color: var(--status-warning);
+}
+
+.ui-interactive-warning:hover,
+.ui-interactive-warning:focus-visible {
+    background: var(--state-warning-bg);
+    color: var(--status-warning);
+}
+
+.ui-interactive-info {
+    color: var(--status-info);
+}
+
+.ui-interactive-info:hover,
+.ui-interactive-info:focus-visible {
+    background: var(--state-info-bg);
+    color: var(--status-info);
+}
+
+.ui-interactive-badge {
+    border: 1px solid var(--state-selected-border);
+    background: var(--state-selected-bg);
+    color: var(--state-selected-text);
+}
+
+.ui-interactive-readonly {
+    border-color: var(--state-readonly-border);
+    background: var(--state-readonly-bg);
+    color: var(--content-secondary);
+}
+
+.ui-interactive-transparent-hover:hover,
+.ui-interactive-transparent-hover:focus-visible {
+    background: transparent;
+}
+
+.ui-interactive-tab-trigger {
+    color: var(--content-secondary);
+}
+
+.ui-interactive-tab-trigger:hover,
+.ui-interactive-tab-trigger:focus-visible {
+    background: var(--state-hover-bg);
+    color: var(--content-primary);
+}
+
+.ui-interactive-tab-trigger[data-state='active'] {
+    background: var(--state-selected-bg);
+    color: var(--state-selected-text);
+}
+
+.ui-interactive-menu-item {
+    color: var(--content-primary);
+}
+
+.ui-interactive-menu-item:hover,
+.ui-interactive-menu-item:focus-visible,
+.ui-interactive-menu-item[data-state='open'] {
+    background: var(--state-hover-bg);
+    color: var(--content-primary);
+}
+
+.ui-interactive-menu-item-destructive {
+    color: var(--status-destructive);
+}
+
+.ui-interactive-menu-item-destructive:hover,
+.ui-interactive-menu-item-destructive:focus-visible,
+.ui-interactive-menu-item-destructive[data-state='open'] {
+    background: var(--state-destructive-bg);
+    color: var(--status-destructive);
+}
+
+.ui-interactive-command-item {
+    color: var(--content-primary);
+}
+
+.ui-interactive-command-item[data-selected='true'] {
+    background: var(--state-selected-bg);
+    color: var(--state-selected-text);
+}
+
+.ui-interactive-command-item:hover,
+.ui-interactive-command-item:focus-visible {
+    background: var(--state-hover-bg);
+    color: var(--content-primary);
+}
+
+.ui-interactive-table-row:hover {
+    background: var(--state-hover-bg);
+}
+
+.ui-interactive-table-row[data-state='selected'] {
+    background: var(--state-selected-bg);
+    color: var(--state-selected-text);
+}
+
+.ui-control-surface {
+    border-color: var(--border-default);
+    background: var(--surface-elevated);
+    color: var(--content-primary);
+}
+
+.ui-control-surface:hover,
+.ui-control-surface:focus-visible {
+    background: var(--state-hover-bg);
+    color: var(--content-primary);
+}
+
+.ui-control-emphasis {
+    border-color: var(--state-selected-border);
+    background: var(--interactive-primary);
+    color: var(--content-inverse);
+}
+
+.ui-control-emphasis:hover,
+.ui-control-emphasis:focus-visible {
+    background: var(--interactive-primary-hover);
+    color: var(--content-inverse);
+}
+
+.ui-control-outline {
+    border-color: var(--border-default);
+    background: transparent;
+    color: var(--content-primary);
+}
+
+.ui-control-outline:hover,
+.ui-control-outline:focus-visible {
+    background: var(--state-hover-bg);
+    color: var(--content-primary);
+}
+
+.ui-control-ghost {
+    border-color: transparent;
+    background: transparent;
+    color: var(--content-secondary);
+}
+
+.ui-control-ghost:hover,
+.ui-control-ghost:focus-visible {
+    background: var(--state-hover-bg);
+    color: var(--content-primary);
+}
+
+.ui-control-ghost.ui-interactive-ghost-success {
+    color: var(--status-success);
+}
+
+.ui-control-ghost.ui-interactive-ghost-success:hover,
+.ui-control-ghost.ui-interactive-ghost-success:focus-visible {
+    background: var(--state-success-bg);
+    color: var(--status-success);
+}
+
+.ui-control-ghost.ui-interactive-ghost-warning {
+    color: var(--status-warning);
+}
+
+.ui-control-ghost.ui-interactive-ghost-warning:hover,
+.ui-control-ghost.ui-interactive-ghost-warning:focus-visible {
+    background: var(--state-warning-bg);
+    color: var(--status-warning);
+}
+
+.ui-control-ghost.ui-interactive-ghost-info {
+    color: var(--status-info);
+}
+
+.ui-control-ghost.ui-interactive-ghost-info:hover,
+.ui-control-ghost.ui-interactive-ghost-info:focus-visible {
+    background: var(--state-info-bg);
+    color: var(--status-info);
+}
+
+.ui-control-ghost.ui-interactive-ghost-destructive {
+    color: var(--status-destructive);
+}
+
+.ui-control-ghost.ui-interactive-ghost-destructive:hover,
+.ui-control-ghost.ui-interactive-ghost-destructive:focus-visible {
+    background: var(--state-destructive-bg);
+    color: var(--status-destructive);
+}
+
+.ui-control-destructive {
+    border-color: var(--state-destructive-border);
+    background: var(--state-destructive-solid-bg);
+    color: var(--state-destructive-solid-text);
+}
+
+.ui-control-destructive:hover,
+.ui-control-destructive:focus-visible {
+    background: color-mix(in srgb, var(--state-destructive-solid-bg) 92%, #000);
+    color: var(--state-destructive-solid-text);
+}
+
+.ui-control-success {
+    border-color: var(--state-success-border);
+    background: var(--state-success-solid-bg);
+    color: var(--state-success-solid-text);
+}
+
+.ui-control-success:hover,
+.ui-control-success:focus-visible {
+    background: color-mix(in srgb, var(--state-success-solid-bg) 92%, #000);
+    color: var(--state-success-solid-text);
+}
+
+.ui-control-warning {
+    border-color: var(--state-warning-border);
+    background: var(--state-warning-solid-bg);
+    color: var(--state-warning-solid-text);
+}
+
+.ui-control-warning:hover,
+.ui-control-warning:focus-visible {
+    background: color-mix(in srgb, var(--state-warning-solid-bg) 92%, #000);
+    color: var(--state-warning-solid-text);
+}
+
+.ui-control-info {
+    border-color: var(--state-info-border);
+    background: var(--state-info-solid-bg);
+    color: var(--state-info-solid-text);
+}
+
+.ui-control-info:hover,
+.ui-control-info:focus-visible {
+    background: color-mix(in srgb, var(--state-info-solid-bg) 92%, #000);
+    color: var(--state-info-solid-text);
+}
+
+.ui-control-link {
+    color: var(--interactive-primary);
+}
+
+.ui-control-link:hover,
+.ui-control-link:focus-visible {
+    color: var(--interactive-primary);
+    text-decoration: underline;
+}
+
+.ui-btn-emphasis {
+    background: var(--btn-primary-bg);
+    color: var(--btn-primary-fg);
+    border-color: transparent;
+}
+
+.ui-btn-emphasis:hover,
+.ui-btn-emphasis:focus-visible {
+    background: var(--btn-primary-bg-hover);
+    color: var(--btn-primary-fg);
+}
+
+.ui-btn-emphasis:active {
+    background: var(--btn-primary-bg-active);
+    color: var(--btn-primary-fg);
+}
+
+.ui-btn-surface {
+    border-color: var(--btn-secondary-border);
+    background: var(--btn-secondary-bg);
+    color: var(--btn-secondary-fg);
+}
+
+.ui-btn-surface:hover,
+.ui-btn-surface:focus-visible {
+    background: var(--btn-secondary-bg-hover);
+    color: var(--btn-secondary-fg);
+}
+
+.ui-btn-surface:active {
+    background: var(--btn-secondary-bg-active);
+    color: var(--btn-secondary-fg);
+}
+
+.ui-btn-outline {
+    border-color: var(--btn-outline-border);
+    background: transparent;
+    color: var(--btn-outline-fg);
+}
+
+.ui-btn-outline:hover,
+.ui-btn-outline:focus-visible {
+    background: var(--btn-outline-bg-hover);
+    color: var(--btn-outline-fg);
+}
+
+.ui-btn-outline:active {
+    background: var(--btn-outline-bg-active);
+    color: var(--btn-outline-fg);
+}
+
+.ui-btn-ghost {
+    border-color: transparent;
+    background: transparent;
+    color: var(--btn-ghost-fg);
+}
+
+.ui-btn-ghost:hover,
+.ui-btn-ghost:focus-visible {
+    background: var(--btn-ghost-bg-hover);
+    color: var(--btn-ghost-fg);
+}
+
+.ui-btn-ghost:active {
+    background: var(--btn-ghost-bg-active);
+    color: var(--btn-ghost-fg);
+}
+
+.ui-btn-link {
+    border-color: transparent;
+    background: transparent;
+    color: var(--btn-link-fg);
+}
+
+.ui-btn-link:hover,
+.ui-btn-link:focus-visible {
+    color: var(--btn-link-fg-hover);
+    text-decoration: underline;
+}
+
+.ui-btn-link:active {
+    color: var(--btn-link-fg-hover);
+}
+
+.ui-btn-destructive {
+    border-color: transparent;
+    background: var(--btn-destructive-bg);
+    color: var(--btn-destructive-fg);
+}
+
+.ui-btn-destructive:hover,
+.ui-btn-destructive:focus-visible {
+    background: var(--btn-destructive-bg-hover);
+    color: var(--btn-destructive-fg);
+}
+
+.ui-btn-destructive:active {
+    background: var(--btn-destructive-bg-active);
+    color: var(--btn-destructive-fg);
+}
+
+.ui-interactive-ghost-field {
+    border-color: color-mix(in srgb, var(--border-default) 70%, transparent);
+    background: var(--state-readonly-bg);
+}
+
+.ui-interactive-ghost-field:focus-visible {
+    background: var(--surface-app);
+}
+
+.ui-interactive-checked-control[data-state='checked'] {
+    border-color: var(--state-selected-border);
+    background: var(--state-selected-bg);
+    color: var(--state-selected-text);
+}
+
+/* Primary-tinted tab trigger: muted by default, primary when active */
+.ui-interactive-primary-tab {
+    color: var(--content-secondary);
+}
+
+.ui-interactive-primary-tab:hover,
+.ui-interactive-primary-tab:focus-visible {
+    color: var(--content-primary);
+}
+
+.ui-interactive-primary-tab[data-state='active'] {
+    background: color-mix(in srgb, var(--interactive-primary) 10%, transparent);
+    color: var(--interactive-primary);
+}
+
+/* Command item with primary selected state */
+.ui-interactive-command-item-primary {
+    color: var(--content-primary);
+}
+
+.ui-interactive-command-item-primary[data-selected='true'] {
+    background: color-mix(in srgb, var(--interactive-primary) 10%, transparent);
+    color: var(--interactive-primary);
+}
+
+.ui-interactive-command-item-primary:hover,
+.ui-interactive-command-item-primary:focus-visible {
+    background: var(--state-hover-bg);
+    color: var(--content-primary);
+}
+
+/* Success ghost modifier for standalone ghost control */
+.ui-interactive-ghost-success {
+    color: var(--status-success);
+}
+
+.ui-interactive-ghost-success:hover,
+.ui-interactive-ghost-success:focus-visible {
+    background: var(--state-success-bg);
+    color: var(--status-success);
+}
+
+/* Warning ghost modifier */
+.ui-interactive-ghost-warning {
+    color: var(--status-warning);
+}
+
+.ui-interactive-ghost-warning:hover,
+.ui-interactive-ghost-warning:focus-visible {
+    background: var(--state-warning-bg);
+    color: var(--status-warning);
+}
+
+/* Info ghost modifier */
+.ui-interactive-ghost-info {
+    color: var(--status-info);
+}
+
+.ui-interactive-ghost-info:hover,
+.ui-interactive-ghost-info:focus-visible {
+    background: var(--state-info-bg);
+    color: var(--status-info);
+}
+
+/* Destructive ghost modifier */
+.ui-interactive-ghost-destructive {
+    color: var(--status-destructive);
+}
+
+.ui-interactive-ghost-destructive:hover,
+.ui-interactive-ghost-destructive:focus-visible {
+    background: var(--state-destructive-bg);
+    color: var(--status-destructive);
+}
+
+/* Decorative verified / success chip — not interactive, static display only */
+.ui-badge-verified {
+    display: inline-flex;
+    align-items: center;
+    border-radius: var(--radius-scale-sm);
+    background: var(--state-success-bg);
+    padding: 0.125rem 0.375rem;
+    font-size: var(--font-size-label);
+    font-weight: var(--font-weight-label);
+    text-transform: uppercase;
+    letter-spacing: 0.04em;
+    color: var(--status-success);
+}
+
+/* Decorative icon container with primary tint — not interactive */
+.ui-icon-primary {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    border-radius: 50%;
+    background: color-mix(in srgb, var(--interactive-primary) 10%, transparent);
+    color: var(--interactive-primary);
+}
+
+/* Primary emphasis button override for default variant hover */
+.ui-control-emphasis-hover:hover,
+.ui-control-emphasis-hover:focus-visible {
+    background: var(--interactive-primary-hover);
+    color: var(--content-inverse);
+}
+
+/* Static primary-subtle surface — decorative container, not interactive */
+.ui-surface-primary-subtle {
+    background: color-mix(in srgb, var(--interactive-primary) 5%, transparent);
+}
+
+/* Ghost-primary modifier — primary-tinted hover/focus for icon/action buttons */
+.ui-interactive-ghost-primary {
+    color: var(--interactive-primary);
+}
+
+.ui-interactive-ghost-primary:hover,
+.ui-interactive-ghost-primary:focus-visible {
+    background: color-mix(in srgb, var(--interactive-primary) 10%, transparent);
+    color: var(--interactive-primary);
+}
+
+/* Scrollbar with hover visibility — applied to overflow scroll containers */
+.ui-scrollbar-hover {
+    scrollbar-width: none;
+}
+
+.ui-scrollbar-hover::-webkit-scrollbar {
+    height: 1px;
+    opacity: 0;
+    transition: opacity var(--motion-fast) var(--ease-standard);
+}
+
+.ui-scrollbar-hover::-webkit-scrollbar-track {
+    background: transparent;
+}
+
+.ui-scrollbar-hover::-webkit-scrollbar-thumb {
+    background: transparent;
+    border-radius: var(--radius-scale-sm);
+}
+
+.ui-scrollbar-hover:hover::-webkit-scrollbar-thumb {
+    background: var(--border-default);
+}

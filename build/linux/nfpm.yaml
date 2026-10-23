@@ -1,0 +1,48 @@
+name: zentro
+arch: amd64
+platform: linux
+version: ${VERSION}
+section: database
+priority: optional
+maintainer: "AlexNguyen <nguyenhoainam121n@gmail.com>"
+description: |
+  SQL IDE for Postgres, MySQL, SQL Server, and SQLite.
+vendor: Zentro
+homepage: https://zentro-ide.com
+license: GPL-3.0-only AND LicenseRef-Zentro-Commercial
+
+contents:
+  # Populated by the workflow before nfpm runs, from whichever binary
+  # matches the target format's webkit ABI: the Fedora-container build
+  # (webkit2gtk4.1) for rpm, the ubuntu-22.04 build (webkit2gtk-4.0) for deb -
+  # same split the AppImage lane already needs for the same reason.
+  - src: ./linux-stage/zentro-bin
+    dst: /usr/bin/zentro
+    file_info:
+      mode: 0755
+  - src: ./build/linux/zentro.desktop
+    dst: /usr/share/applications/zentro.desktop
+    file_info:
+      mode: 0644
+  - src: ./build/linux/zentro.png
+    dst: /usr/share/icons/hicolor/512x512/apps/zentro.png
+    file_info:
+      mode: 0644
+  - src: ./THIRD_PARTY_NOTICES.md
+    dst: /usr/share/doc/zentro/THIRD_PARTY_NOTICES.md
+    file_info:
+      mode: 0644
+  - src: ./LICENSE
+    dst: /usr/share/doc/zentro/LICENSE
+    file_info:
+      mode: 0644
+
+overrides:
+  rpm:
+    depends:
+      - gtk3
+      - webkit2gtk4.1
+  deb:
+    depends:
+      - libgtk-3-0
+      - libwebkit2gtk-4.0-37

@@ -1,0 +1,39 @@
+name: Feature Request
+description: Suggest a new feature or improvement
+title: "[Feature]: "
+labels: ["enhancement", "needs-triage"]
+body:
+  - type: markdown
+    attributes:
+      value: |
+        Thanks for suggesting a feature. Feature work needs an agreed issue before a pull
+        request (see CONTRIBUTING.md), so please describe the problem clearly.
+  - type: textarea
+    id: problem
+    attributes:
+      label: Problem it solves
+      description: Describe the problem you are trying to solve and who it affects.
+    validations:
+      required: true
+  - type: textarea
+    id: proposed
+    attributes:
+      label: Proposed approach
+      description: Describe the feature or solution you would like to see.
+    validations:
+      required: false
+  - type: textarea
+    id: alternatives
+    attributes:
+      label: Alternatives considered
+      description: Describe any alternative solutions you have considered.
+    validations:
+      required: false
+  - type: checkboxes
+    id: agreement
+    attributes:
+      label: Issue agreement
+      description: Please confirm you understand the contribution process.
+      options:
+        - label: I understand feature work needs an agreed issue before a pull request.
+          required: true

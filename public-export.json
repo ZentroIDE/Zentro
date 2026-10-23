@@ -1,0 +1,20 @@
+{
+  "description": "What the public tree leaves out. Pro code is found by path (ADR 0019): files named pro_* (Go code and its tests, test data) or inside a pro/ directory, and frontend/src/pro/. Patterns use * (inside one path segment), ** (any depth) and a trailing / for a directory. Everything else (the Go feature registry, the generated entitlementMatrix.ts, the Query Stats/Schema Rollback/PII upsell copy) ships as-is on purpose: a plan knowing what it doesn't include, and showing an upgrade prompt for it, is core behavior, not a Pro secret.",
+  "deny": [
+    "**/pro_*",
+    "**/pro/",
+    "frontend/src/pro/",
+    ".env.txt",
+    "zentro.log",
+    "api.md",
+    "signpath-integration.md",
+    ".github/workflows/release.yml",
+    "docs/TECH-DEBT.md",
+    ".agent/",
+    ".codex/",
+    ".cursor/",
+    "docs/agents/"
+  ],
+  "forbiddenStrings": ["SignPath"],
+  "forbiddenStringsIgnore": ["docs/", "public-export.json"]
+}

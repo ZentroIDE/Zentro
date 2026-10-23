@@ -1,0 +1,55 @@
+name: Entitlement Matrix
+
+# frontend/src/lib/license/entitlementMatrix.ts is generated from the Go feature
+# registry. This fails a PR that changes one without regenerating the other.
+
+on:
+  pull_request:
+    paths:
+      - 'internal/extensions/license/**'
+      - 'cmd/gen-entitlement-matrix/**'
+      - 'scripts/gen-entitlement-matrix.mjs'
+      - 'frontend/src/lib/license/entitlementMatrix.ts'
+      - '.github/workflows/entitlements.yml'
+  push:
+    branches:
+      - dev
+      - main
+    paths:
+      - 'internal/extensions/license/**'
+      - 'cmd/gen-entitlement-matrix/**'
+      - 'scripts/gen-entitlement-matrix.mjs'
+      - 'frontend/src/lib/license/entitlementMatrix.ts'
+      - '.github/workflows/entitlements.yml'
+
+concurrency:
+  group: ${{ github.workflow }}-${{ github.ref }}
+  cancel-in-progress: true
+
+jobs:
+  entitlement-matrix:
+    if: ${{ !(github.event_name == 'push' && github.ref == 'refs/heads/main' && github.event.repository.private) }}
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Setup Go
+        uses: actions/setup-go@v5
+        with:
+          go-version-file: go.mod
+
+      - name: Setup Node
+        uses: actions/setup-node@v4
+        with:
+          node-version: '20'
+          cache: 'npm'
+          cache-dependency-path: frontend/package-lock.json
+
+      # The generator formats its output with the frontend's prettier.
+      - name: Install frontend dependencies
+        working-directory: frontend
+        run: npm ci --no-audit --prefer-offline
+
+      - name: Check the matrix is up to date
+        run: node scripts/gen-entitlement-matrix.mjs --check

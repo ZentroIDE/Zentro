@@ -1,0 +1,965 @@
+/* ─────────────────────────────────────────────────────────
+   components.css — Global escape-hatch CSS
+   Only styles that CANNOT be expressed with Tailwind utilities
+   live here. All other styles must use Tailwind classes in TSX.
+   ───────────────────────────────────────────────────────── */
+
+/* Virtual scroll container */
+.result-virtual-scroll {
+    flex: 1;
+    position: relative;
+    overflow: auto;
+    /* Sticky first-column inside tables is unreliable when any containment is
+     * applied on the scroll host in Chromium/WebView. Keep this container fully
+     * unconstrained so body cells can pin on horizontal scroll.
+     */
+    contain: none;
+    /* Scroll anchoring fights virtualization: Chromium picks an anchor row,
+       the virtualizer then unmounts it, and the browser "corrects" scrollTop
+       to compensate — which reads as the grid kicking back mid-scroll. */
+    overflow-anchor: none;
+    /* Don't chain to the panel/app scroller when hitting an edge. */
+    overscroll-behavior: contain;
+}
+
+/* Table cell input (inline editing) */
+.rt-cell-input {
+    width: 100%;
+    height: 100%;
+    background: var(--background);
+    color: var(--foreground);
+    border: 1px solid var(--ring) !important;
+    outline: none !important;
+    box-shadow: inset 0 0 0 1px color-mix(in srgb, var(--ring) 28%, transparent) !important;
+    font-family: inherit;
+    font-size: 11px;
+    line-height: 1;
+    padding: 0 8px;
+    box-sizing: border-box;
+    border-radius: 0;
+}
+
+.rt-cell-input:focus {
+    border-color: var(--primary) !important;
+    box-shadow: inset 0 0 0 1px color-mix(in srgb, var(--primary) 40%, transparent) !important;
+}
+
+/* datetime-local: reset browser default border */
+.rt-cell-input[type='datetime-local'] {
+    -webkit-appearance: none;
+    appearance: none;
+    padding: 0 4px;
+}
+
+.rt-floating-editor-anchor {
+    position: relative;
+    width: 100%;
+    overflow: visible;
+}
+
+.rt-floating-editor-placeholder {
+    opacity: 0;
+    pointer-events: none;
+}
+
+.rt-floating-textarea-editor {
+    position: absolute;
+    top: -4px;
+    left: 0;
+    z-index: calc(var(--layer-table-sticky) + 3);
+    width: max(100%, 320px);
+    max-width: min(640px, 78vw);
+    min-height: 96px !important;
+    resize: none;
+    overflow-y: auto;
+    padding: 8px;
+    line-height: 1.45;
+    white-space: pre-wrap;
+    word-break: break-word;
+    border-radius: 4px;
+    border-color: var(--primary) !important;
+    background: color-mix(in srgb, var(--background) 96%, white 4%);
+    box-shadow:
+        0 10px 28px color-mix(in srgb, black 14%, transparent),
+        inset 0 0 0 1px color-mix(in srgb, var(--primary) 30%, transparent) !important;
+}
+
+.rt-data-font {
+    font-family: 'Cascadia Code', 'Fira Code', monospace;
+    font-size: 12px;
+}
+
+.rt-row-detail-editor {
+    width: 100%;
+    min-height: 96px;
+    max-height: 240px;
+    resize: none;
+    overflow-y: auto;
+    padding: 8px;
+    line-height: 1.45;
+    white-space: pre-wrap;
+    word-break: break-word;
+    border-radius: 4px;
+    border-color: var(--primary) !important;
+    background: color-mix(in srgb, var(--background) 96%, white 4%);
+    box-shadow:
+        0 4px 16px color-mix(in srgb, black 12%, transparent),
+        inset 0 0 0 1px color-mix(in srgb, var(--primary) 30%, transparent) !important;
+    font-family: 'Cascadia Code', 'Fira Code', monospace;
+    font-size: 12px;
+}
+
+.rt-floating-editor-suffix {
+    position: absolute;
+    right: 8px;
+    bottom: 8px;
+    max-width: calc(100% - 20px);
+    color: var(--muted-foreground);
+    font-size: 10px;
+    line-height: 1.2;
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    pointer-events: none;
+    background: color-mix(in srgb, var(--background) 92%, transparent);
+    padding-left: 8px;
+}
+
+@keyframes rtRowsFadeIn {
+    from {
+        opacity: 0;
+        transform: translateY(4px);
+    }
+
+    to {
+        opacity: 1;
+        transform: translateY(0);
+    }
+}
+
+.rt-rows-fadein {
+    animation: rtRowsFadeIn 0.25s ease-out forwards;
+}
+
+@keyframes tiFadeIn {
+    from {
+        opacity: 0;
+        transform: translateY(3px);
+    }
+
+    to {
+        opacity: 1;
+        transform: translateY(0);
+    }
+}
+
+.ti-fade-in {
+    animation: tiFadeIn 0.22s ease-out;
+}
+
+/* ── Result table (ResultTable.tsx — migrated separately) ─ */
+.result-table-tanstack {
+    /*
+     * Sticky first-column is unreliable with `border-collapse: collapse`
+     * in Chromium/WebView. Use separated borders so the index column can
+     * pin correctly during horizontal scrolling.
+     */
+    /* border-collapse: separate; */
+    /* border-spacing: 0; */
+    /* isolation: isolate; */
+    /* Locked row height. The row virtualizer positions spacer rows with the
+       same number (RT_ROW_HEIGHT in components/data-table/gridMetrics.ts), so
+       this value and that constant must always agree. */
+    --rt-row-height: 20px;
+    font-size: 12px;
+    font-family: 'Cascadia Code', 'Fira Code', monospace;
+    width: max-content;
+    min-width: max-content;
+    table-layout: fixed;
+}
+
+.result-table-tanstack thead {
+    position: sticky;
+    top: 0;
+    z-index: 10;
+    /* Promotes the sticky header to its own compositing layer so scrolling
+       content beneath it is composited, not repainted together with it, every
+       frame. Distinct from `contain` on .result-virtual-scroll (which broke
+       sticky columns, see that rule's comment) — this only hints the compositor
+       about this element, it doesn't change layout/clipping of the scroll host. */
+    will-change: transform;
+}
+
+.rt-th {
+    position: relative;
+    background: var(--card);
+    /* Dividers as box-shadow, not border: a real border on a
+       position:sticky thead/th is dropped by Chromium/WebView2 mid-scroll.
+       Both shadows are INSET — an outset bottom line renders outside the
+       sticky box and gets clipped / painted over by rows scrolling up
+       under the pinned header. Inset keeps every hairline inside the cell
+       so it moves with the sticky header and never disappears. */
+    box-shadow:
+        inset 0 -1px 0 0 var(--border-subtle),
+        inset -1px 0 0 0 var(--border-grid);
+    padding: 0;
+    text-align: left;
+    white-space: nowrap;
+    user-select: none;
+}
+
+.rt-th-label {
+    display: flex;
+    align-items: center;
+    gap: 4px;
+    padding: 4px 8px;
+    font-weight: 500;
+    color: var(--muted-foreground);
+    font-size: 10px;
+    letter-spacing: 0.2px;
+}
+
+.rt-th-drag-target {
+    cursor: grab;
+}
+
+.rt-th-drag-target:active {
+    cursor: grabbing;
+}
+
+.rt-th-sortable {
+    cursor: pointer;
+}
+
+.rt-th-sortable:hover .rt-th-label {
+    color: var(--foreground);
+}
+
+.rt-th-sorted .rt-th-label {
+    color: var(--primary);
+}
+
+/* Same tint as a selected data-grid cell (--state-cell-selected-bg), not a
+   solid --interactive-primary fill — a selected column header should read
+   as the same selection state as the cells below it, not a much stronger
+   emphasis block.
+   --state-cell-selected-bg is translucent (color-mix with transparent), and
+   this header is `position: sticky` — a plain `background` would let rows
+   scrolling underneath show through the tint. Layering an opaque
+   background-color under a background-image of the same tint composites the
+   translucency against --card instead of the scrolling content behind it. */
+.rt-th-column-selected {
+    background-color: var(--card);
+    background-image: linear-gradient(var(--state-cell-selected-bg), var(--state-cell-selected-bg));
+}
+
+.rt-sort-icon {
+    flex-shrink: 0;
+    opacity: 0.8;
+}
+
+/* Data rows in the virtualized result grid are a fixed height so the rendered
+   geometry matches the row virtualizer's estimate exactly. Targeted at
+   `[data-rt-row]` so the spacer rows that carry the scroll padding, and the
+   static tables that reuse `.result-table-tanstack` (Table Info, templates),
+   keep sizing themselves. */
+.result-table-tanstack tr[data-rt-row] {
+    height: var(--rt-row-height);
+}
+
+.result-virtual-scroll .rt-cell-content--compact {
+    /* Guard, not a size: `height: 100%` already resolves against the cell's
+       definite height. This only stops unusually tall content (a large glyph,
+       an embedded control) from pushing a row past the height the row
+       virtualizer assumes. The usable box is the row height minus the cell's
+       1px bottom border; `.rt-cell-content` clips the overflow. */
+    max-height: calc(var(--rt-row-height) - 1px);
+}
+
+.result-table-tanstack td {
+    border-bottom: 1px solid var(--border-grid);
+    /* border-right: 1px solid var(--border-grid); */
+    padding: 0;
+    height: var(--rt-row-height);
+    vertical-align: middle;
+    position: relative;
+    overflow: visible;
+}
+
+.rt-cell-content {
+    display: flex;
+    align-items: center;
+    width: 100%;
+    height: 100%;
+    box-sizing: border-box;
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    border: 1px solid transparent;
+    user-select: none;
+}
+
+/* Hover/selection color fades only while idle. During a scroll gesture the
+   cursor stays put while rows slide underneath it, which keeps flipping
+   `:hover` on the cells passing beneath — transitioning that every frame is
+   pure style-recalc/paint cost the scroll doesn't need. `rt-is-scrolling` is
+   toggled on the scroll host by useDataTableVirtualization's scroll handler. */
+.result-virtual-scroll:not(.rt-is-scrolling) .rt-cell-content {
+    transition: background-color var(--motion-fast) var(--ease-standard);
+}
+
+.rt-cell-content--compact {
+    padding: 0 8px;
+    font-size: var(--font-size-label);
+    line-height: 1;
+}
+
+/* Zebra striping. Same specificity/position as before (was `background:
+   var(--card)`, an invisible no-op) so hover, selection and deleted-row
+   backgrounds still win in the same cascade order. The sticky index column
+   keeps its own solid --card fill (td.rt-index-sticky !important, below), so
+   the tint lands only on the scrollable data cells. */
+.result-table-tanstack tr.rt-row-alt td {
+    background: var(--state-row-alt-bg);
+}
+
+.result-table-tanstack tr:hover td {
+    background: var(--state-hover-bg);
+}
+
+/* Range background: every selected cell. No per-cell border here - Excel/
+   Sheets-style selections only outline the whole range plus the active cell,
+   not every individual cell (see .rt-cell-active below). */
+.rt-cell-selected-range {
+    background: var(--state-cell-selected-bg) !important;
+}
+
+/* Active cell: the single most-recently-selected cell in the range. Its
+   background already comes from .rt-cell-selected-range when it's part of a
+   multi-cell selection (or from the cell's own state otherwise); this class
+   only adds the border. */
+.rt-cell-active {
+    border: 1px solid var(--state-cell-selected-border) !important;
+}
+
+.rt-cell-dirty {
+    background: var(--state-dirty-bg) !important;
+}
+
+.rt-cell-blurred {
+    filter: blur(7px);
+    user-select: none;
+}
+
+.rt-cell-null {
+    color: var(--content-null);
+    font-style: italic;
+}
+
+/* Timezone offset on a timestamptz value — shown but de-emphasized so the
+   wall-clock time reads first (matches DataGrip / DBeaver). The full value,
+   offset included, is still what gets copied. */
+.rt-cell-tz {
+    color: var(--muted-foreground);
+    opacity: 0.75;
+}
+
+.row-num-col {
+    color: var(--content-primary);
+    font-size: 10px;
+    user-select: none;
+    min-width: 40px;
+    justify-content: center;
+    text-align: center;
+    opacity: 0.7;
+}
+
+.rt-placeholder-cell {
+    background: color-mix(in srgb, var(--muted) 20%, transparent);
+    text-align: left;
+}
+
+/* "Loading more rows..." lives inside the one virtual slot the row virtualizer
+   reserves past the loaded window, so it occupies exactly one row and sits at
+   the right scroll offset. Sticky to the scroller's left edge because the cell
+   it lives in spans the full table width, which can be several thousand pixels
+   wide. */
+.rt-loading-row {
+    position: sticky;
+    left: 0;
+    display: inline-flex;
+    align-items: center;
+    gap: 4px;
+    height: calc(var(--rt-row-height) - 1px);
+    padding: 0 8px;
+    font-size: var(--font-size-label);
+    line-height: 1;
+    font-weight: 500;
+    color: var(--muted-foreground);
+    white-space: nowrap;
+}
+
+/* The spacer cells that carry the virtualizer's scroll padding. They are
+   off-screen in the steady state and only become visible when a fast flick
+   outruns React, so paint them as empty grid rows: a gap that looks like rows
+   still arriving reads far better than a blank sheet. The gradient period is
+   two rows, matching the zebra, and lines up exactly because every row is
+   `--rt-row-height` tall. */
+.rt-scroll-spacer {
+    background-image: repeating-linear-gradient(
+        to bottom,
+        transparent 0,
+        transparent calc(var(--rt-row-height) - 1px),
+        var(--border-grid) calc(var(--rt-row-height) - 1px),
+        var(--border-grid) var(--rt-row-height),
+        var(--state-row-alt-bg) var(--rt-row-height),
+        var(--state-row-alt-bg) calc(var(--rt-row-height) * 2 - 1px),
+        var(--border-grid) calc(var(--rt-row-height) * 2 - 1px),
+        var(--border-grid) calc(var(--rt-row-height) * 2)
+    );
+}
+
+.rt-row-deleted td {
+    background: var(--state-deleted-bg) !important;
+}
+
+.result-table-tanstack tr.rt-row-alt.rt-row-deleted td {
+    background: color-mix(in srgb, var(--state-deleted-bg) 80%, var(--card)) !important;
+}
+
+.result-table-tanstack tr.rt-row-selected td {
+    background: var(--state-row-selected-bg);
+}
+
+/* Same tint as a selected data-grid cell (--state-cell-selected-bg), not a
+   solid --interactive-primary fill — matches the column-header selection
+   treatment above instead of standing out as a much stronger emphasis block.
+   Layered over an opaque background-color (not a plain translucent
+   background) for the same reason as .rt-th-column-selected above: this
+   column is `position: sticky` (see .rt-index-sticky), so a plain
+   translucent background would let columns scrolling underneath show through. */
+.result-table-tanstack tr.rt-row-selected td.rt-index-sticky {
+    background-color: var(--card) !important;
+    background-image: linear-gradient(
+        var(--state-cell-selected-bg),
+        var(--state-cell-selected-bg)
+    ) !important;
+}
+
+.result-table-tanstack tr.rt-row-selected td.rt-index-sticky .row-num-col {
+    opacity: 1;
+}
+
+/* Index cell never shows row-state (deleted/draft) backgrounds */
+.result-table-tanstack tr.rt-row-deleted td.rt-index-sticky,
+.result-table-tanstack tr.rt-row-alt.rt-row-deleted td.rt-index-sticky,
+.result-table-tanstack tr.rt-row-draft td.rt-index-sticky,
+.result-table-tanstack tr.rt-row-alt.rt-row-draft td.rt-index-sticky {
+    background: var(--card) !important;
+    color: inherit !important;
+}
+
+/* Restore the selected tint when row is also deleted/drafted — same opaque
+   layering as the base selected rule above, same reason (sticky column). */
+.result-table-tanstack tr.rt-row-selected.rt-row-deleted td.rt-index-sticky,
+.result-table-tanstack tr.rt-row-selected.rt-row-draft td.rt-index-sticky {
+    background-color: var(--card) !important;
+    background-image: linear-gradient(
+        var(--state-cell-selected-bg),
+        var(--state-cell-selected-bg)
+    ) !important;
+}
+
+.result-table-tanstack tr.rt-row-alt.rt-row-selected.rt-row-deleted td.rt-index-sticky,
+.result-table-tanstack tr.rt-row-alt.rt-row-selected.rt-row-draft td.rt-index-sticky {
+    background-color: var(--card) !important;
+    background-image: linear-gradient(
+        var(--state-cell-selected-bg),
+        var(--state-cell-selected-bg)
+    ) !important;
+}
+
+.rt-index-sticky {
+    position: sticky !important;
+    left: 0 !important;
+    background: var(--card);
+    overflow: visible;
+    /* See .result-table-tanstack thead above — same compositing-layer promotion,
+       applied to the sticky left column instead of the sticky header. */
+    will-change: transform;
+}
+
+.result-table-tanstack td.rt-index-sticky {
+    z-index: 5;
+    background: var(--card) !important;
+    /* Right divider as an outset shadow so it paints over the data cells
+       that scroll underneath the frozen column (a border-right would be
+       covered by them). */
+    box-shadow: 1px 0 0 0 var(--border-grid);
+}
+
+.result-table-tanstack th.rt-index-sticky {
+    top: 0;
+    z-index: 21;
+    /* Doubly sticky (top + left). Bottom hairline INSET so vertical scroll
+       can't clip it; right divider OUTSET so it paints over the columns
+       that scroll under the frozen index column (matches td.rt-index-sticky). */
+    box-shadow:
+        inset 0 -1px 0 0 var(--border-subtle),
+        1px 0 0 0 var(--border-grid);
+}
+
+.rt-th-content {
+    position: relative;
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    min-width: 0;
+    padding-right: 20px;
+}
+
+.rt-th-name {
+    max-width: 100%;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+}
+
+.rt-th-type {
+    opacity: 0.65;
+    flex-shrink: 0;
+}
+
+.rt-th-filter-btn {
+    border: 1px solid transparent;
+    background: transparent;
+    color: var(--muted-foreground);
+    border-radius: 4px;
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    width: 18px;
+    height: 18px;
+    cursor: pointer;
+    transition:
+        border-color 0.12s ease,
+        color 0.12s ease,
+        background-color 0.12s ease;
+}
+
+.rt-th-filter-btn:hover {
+    border-color: var(--border);
+    color: var(--foreground);
+    background: var(--state-hover-bg);
+}
+
+.rt-th-filter-btn.is-active {
+    border-color: var(--border);
+    color: var(--state-selected-text);
+    background: var(--state-selected-bg);
+}
+
+.rt-th-filter-popover {
+    position: absolute;
+    top: calc(100% + 4px);
+    right: 0;
+    z-index: var(--layer-popover);
+    width: 210px;
+    border: 1px solid var(--border);
+    border-radius: 6px;
+    background: var(--popover);
+    box-shadow: var(--elevation-md);
+    padding: 8px;
+}
+
+.rt-th-filter-input {
+    width: 100%;
+    border: 1px solid var(--input);
+    background: var(--background);
+    color: var(--foreground);
+    border-radius: 4px;
+    font-size: 11px;
+    line-height: 1.2;
+    padding: 4px 8px;
+    outline: none;
+}
+
+.rt-th-filter-input:focus {
+    border-color: var(--ring);
+}
+
+.rt-th-filter-input-row {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+}
+
+.rt-th-filter-input-clear {
+    border: 1px solid var(--input);
+    background: var(--background);
+    color: var(--muted-foreground);
+    border-radius: 4px;
+    width: 24px;
+    height: 24px;
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    cursor: pointer;
+    flex-shrink: 0;
+}
+
+.rt-th-filter-input-clear:hover {
+    color: var(--foreground);
+    background: color-mix(in srgb, var(--primary) 14%, transparent);
+}
+
+.rt-th-filter-actions {
+    margin-top: 8px;
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+}
+
+.rt-th-filter-action {
+    border: 1px solid var(--input);
+    background: var(--background);
+    color: var(--foreground);
+    border-radius: 4px;
+    font-size: 10px;
+    padding: 4px 8px;
+    cursor: pointer;
+}
+
+.rt-th-filter-action:hover {
+    background: color-mix(in srgb, var(--primary) 14%, transparent);
+}
+
+.rt-th-filter-action-clear {
+    display: inline-flex;
+    align-items: center;
+    gap: 4px;
+}
+
+.rt-th-drag-handle {
+    position: absolute;
+    top: 50%;
+    right: 8px;
+    transform: translateY(-50%);
+    color: var(--muted-foreground);
+    cursor: grab;
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    width: 12px;
+    height: 12px;
+    opacity: 0;
+    pointer-events: none;
+    transition: opacity 0.12s ease;
+}
+
+.rt-th-drag-handle:active {
+    cursor: grabbing;
+}
+
+.rt-th:hover .rt-th-drag-handle,
+.rt-th:focus-within .rt-th-drag-handle {
+    opacity: 1;
+    pointer-events: auto;
+}
+
+.rt-col-resizer {
+    position: absolute;
+    top: 0;
+    right: 0;
+    width: 6px;
+    height: 100%;
+    cursor: col-resize;
+    user-select: none;
+    touch-action: none;
+}
+
+.rt-col-resizer:hover {
+    background: color-mix(in srgb, var(--primary) 40%, transparent);
+}
+
+.result-table-tanstack tr.rt-row-draft td {
+    background: var(--state-draft-bg) !important;
+}
+
+.result-table-tanstack tr.rt-row-draft:hover td {
+    background: var(--state-draft-hover-bg) !important;
+}
+
+.result-table-tanstack tr.rt-row-draft.rt-row-alt td {
+    background: color-mix(in srgb, var(--state-draft-bg) 80%, var(--card)) !important;
+}
+
+.result-table-tanstack tr.rt-row-draft.rt-row-selected td {
+    background: var(--state-draft-selected-bg) !important;
+}
+
+/* ── Skeleton shimmer animation ────────────────────────── */
+.result-skeleton-row {
+    height: 18px;
+    border-radius: 3px;
+    margin: 8px 12px;
+    /* background: linear-gradient(90deg,
+            var(--skeleton-bg) 25%,
+            var(--skeleton-highlight) 50%,
+            var(--skeleton-bg) 75%);
+    background-size: 600px 100%; */
+    animation: shimmer 1.4s infinite linear;
+}
+
+/* -- Drag to Split Zones (QueryGroup.tsx) -------------- */
+.split-snap-preview {
+    position: absolute;
+    top: 0;
+    bottom: 0;
+    width: 50%;
+    background-color: var(--status-success);
+    z-index: var(--layer-split-preview);
+    pointer-events: none;
+    opacity: 0;
+    transform: scale(0.98);
+    transition:
+        opacity 150ms ease-out,
+        transform 150ms ease-out;
+}
+
+.split-snap-preview.is-visible {
+    opacity: 0.2;
+    transform: scale(1);
+}
+
+.split-snap-preview.left {
+    left: 0;
+}
+
+.split-snap-preview.right {
+    right: 0;
+}
+
+/* ── JSON Viewer ─────────────────────────────────────────── */
+.json-viewer {
+    display: flex;
+    flex-direction: column;
+    /* width: 100%; */
+    /* overflow: hidden; */
+}
+
+.json-toolbar {
+    display: flex;
+    justify-content: flex-end;
+    padding: 0 4px;
+    border-bottom: 1px solid var(--border-default);
+    background: var(--surface-panel);
+}
+
+.json-copy-btn {
+    background: transparent;
+    border: none;
+    color: var(--content-secondary);
+    cursor: pointer;
+    padding: 0;
+    border-radius: 2px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+}
+
+.json-copy-btn:hover {
+    background: var(--surface-elevated);
+    color: var(--content-primary);
+}
+
+.json-content {
+    padding: 4px;
+    overflow: auto;
+    font-family: var(--font-mono, monospace);
+    font-size: 11px;
+    line-height: 1.4;
+}
+
+.json-node {
+    white-space: pre;
+}
+
+.json-toggle {
+    display: inline-flex;
+    align-items: center;
+    margin-right: 0;
+    color: var(--content-secondary);
+}
+
+.json-key {
+    color: var(--syntax-key);
+}
+
+.json-string {
+    color: var(--syntax-string);
+}
+
+.json-number {
+    color: var(--syntax-number);
+}
+
+.json-boolean {
+    color: var(--syntax-boolean);
+}
+
+.json-null {
+    color: var(--syntax-boolean);
+    font-style: italic;
+}
+
+.json-bracket {
+    color: var(--syntax-bracket);
+}
+
+.json-colon {
+    color: var(--content-secondary);
+}
+
+.json-comma {
+    color: var(--content-secondary);
+}
+
+.json-preview {
+    color: var(--content-secondary);
+    font-style: italic;
+    cursor: pointer;
+    margin: 0 4px;
+}
+
+.json-preview:hover {
+    color: var(--interactive-primary);
+}
+
+.json-children {
+    display: block;
+}
+
+/* ── Simple JSON View (without Monaco) ─────────────────────── */
+.simple-json-view {
+    display: flex;
+    flex-direction: column;
+    width: 100%;
+    height: 100%;
+    overflow: hidden;
+}
+
+.simple-json-view .json-copy-btn {
+    align-self: flex-end;
+    margin-bottom: 0;
+}
+
+.simple-json-content {
+    flex: 1;
+    overflow: auto;
+    margin: 0;
+    padding: 4px;
+    font-family: var(--font-mono, monospace);
+    font-size: 10px;
+    line-height: 1.3;
+    color: var(--content-primary);
+    background: var(--surface-app);
+    border-radius: 2px;
+    white-space: pre-wrap;
+    word-break: break-all;
+}
+
+/* ── BLOB Viewer ─────────────────────────────────────────── */
+.blob-viewer {
+    display: flex;
+    align-items: center;
+    gap: 4px;
+    width: 100%;
+}
+
+.blob-preview-btn {
+    display: flex;
+    align-items: center;
+    gap: 4px;
+    background: transparent;
+    border: none;
+    color: var(--interactive-primary);
+    cursor: pointer;
+    padding: 4px 8px;
+    border-radius: 3px;
+    font-size: 11px;
+    font-family: var(--font-mono, monospace);
+}
+
+.blob-preview-btn:hover {
+    background: var(--surface-elevated);
+}
+
+.blob-generic {
+    color: var(--content-secondary);
+    font-size: 11px;
+}
+
+.blob-info {
+    display: flex;
+    align-items: center;
+    gap: 4px;
+    color: var(--content-secondary);
+}
+
+.blob-download-btn {
+    background: transparent;
+    border: none;
+    color: var(--content-secondary);
+    cursor: pointer;
+    padding: 0;
+    border-radius: 2px;
+    display: flex;
+    align-items: center;
+}
+
+.blob-download-btn:hover {
+    background: var(--surface-elevated);
+    color: var(--content-primary);
+}
+
+.blob-empty {
+    color: var(--content-muted);
+    font-style: italic;
+}
+
+.blob-image-container {
+    position: relative;
+    display: inline-block;
+}
+
+.blob-image-wrapper {
+    cursor: pointer;
+    padding: 0;
+}
+
+.blob-image-preview {
+    max-width: 60px;
+    max-height: 40px;
+    object-fit: contain;
+    border-radius: 2px;
+    display: block;
+}
+
+.blob-image-wrapper:hover .blob-image-preview {
+    outline: 1px solid var(--interactive-primary);
+}
+
+.blob-image-error {
+    display: flex;
+    align-items: center;
+    gap: 4px;
+    color: var(--status-destructive);
+    font-size: 11px;
+}
+
+.blob-image-full {
+    max-width: 100%;
+    max-height: 80vh;
+    object-fit: contain;
+}

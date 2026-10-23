@@ -1,0 +1,10 @@
+#!/usr/bin/env sh
+set -eu
+
+if [ "${SKIP_PRE_PUSH_CHECKS:-0}" = "1" ]; then
+  echo "Skipping pre-push checks because SKIP_PRE_PUSH_CHECKS=1"
+  exit 0
+fi
+
+echo "Pre-push checks are enforced during pre-commit."
+exit 0

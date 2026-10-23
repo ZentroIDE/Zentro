@@ -1,0 +1,720 @@
+@import 'tailwindcss';
+
+@theme {
+    /* ── Color tokens ── */
+    --color-bg-primary: var(--surface-app);
+    --color-bg-secondary: var(--surface-panel);
+    --color-bg-tertiary: var(--surface-elevated);
+    --color-surface-overlay: var(--surface-overlay-card);
+
+    --color-text-primary: var(--content-primary);
+    --color-text-secondary: var(--content-secondary);
+    --color-text-muted: var(--content-muted);
+    --color-text-inverse: var(--content-inverse);
+
+    --color-border: var(--border-default);
+    --color-border-subtle: var(--border-subtle);
+
+    --color-accent: var(--interactive-primary);
+    --color-accent-hover: var(--interactive-primary-hover);
+    --color-focus: var(--focus-ring);
+
+    --color-success: var(--status-success);
+    --color-warning: var(--status-warning);
+    --color-info: var(--status-info);
+    --color-overlay: var(--overlay-backdrop);
+    --color-overlay-strong: var(--overlay-backdrop-strong);
+
+    /* shadcn/ui color aliases */
+    --color-background: var(--background);
+    --color-foreground: var(--foreground);
+    --color-card: var(--card);
+    --color-card-foreground: var(--card-foreground);
+    --color-popover: var(--popover);
+    --color-popover-foreground: var(--popover-foreground);
+    --color-primary: var(--primary);
+    --color-primary-foreground: var(--primary-foreground);
+    --color-secondary: var(--secondary);
+    --color-secondary-foreground: var(--secondary-foreground);
+    --color-muted: var(--muted);
+    --color-muted-foreground: var(--muted-foreground);
+    --color-accent-shadcn: var(--accent);
+    --color-accent-foreground: var(--accent-foreground);
+    --color-destructive: var(--destructive);
+    --color-destructive-foreground: var(--destructive-foreground);
+    --color-input: var(--input);
+    --color-ring: var(--ring);
+    --color-sidebar: var(--sidebar);
+    --color-sidebar-foreground: var(--sidebar-foreground);
+    --color-sidebar-primary: var(--sidebar-primary);
+    --color-sidebar-primary-foreground: var(--sidebar-primary-foreground);
+    --color-sidebar-accent: var(--sidebar-accent);
+    --color-sidebar-accent-foreground: var(--sidebar-accent-foreground);
+    --color-sidebar-border: var(--sidebar-border);
+    --color-sidebar-ring: var(--sidebar-ring);
+    --color-chart-1: var(--chart-1);
+    --color-chart-2: var(--chart-2);
+    --color-chart-3: var(--chart-3);
+    --color-chart-4: var(--chart-4);
+    --color-chart-5: var(--chart-5);
+
+    /* ── Typography ── */
+    --font-sans: var(--font-family-sans);
+    --font-mono: var(--font-family-mono);
+    --text-title: var(--font-size-title);
+    --text-section: var(--font-size-section);
+    --text-body: var(--font-size-body);
+    --text-small: var(--font-size-small);
+    --text-label: var(--font-size-label);
+    --text-code: var(--font-size-code);
+
+    /* ── Spacing ── */
+    --spacing-0: var(--space-0);
+    --spacing-1: var(--space-1);
+    --spacing-2: var(--space-2);
+    --spacing-3: var(--space-3);
+    --spacing-4: var(--space-4);
+    --spacing-5: var(--space-5);
+    --spacing-6: var(--space-6);
+    --spacing-8: var(--space-8);
+    --spacing-10: var(--space-10);
+
+    /* ── Control sizes (density-aware) ── */
+    --control-height-default: var(--control-height-default);
+    --control-height-icon: var(--control-height-icon);
+    --control-height-micro: var(--control-height-micro);
+
+    /* ── Icon sizes ── */
+    --icon-xs: var(--icon-size-xs);
+    --icon-sm: var(--icon-size-sm);
+    --icon-md: var(--icon-size-md);
+    --icon-lg: var(--icon-size-lg);
+
+    /* ── Radius ── */
+    --radius-sm: var(--radius-scale-sm);
+    --radius-md: var(--radius-scale-md);
+    --radius-lg: var(--radius-scale-lg);
+    --radius-xl: var(--radius-scale-xl);
+
+    /* ── Elevation ── */
+    --shadow-elevation-sm: var(--elevation-sm);
+    --shadow-elevation-md: var(--elevation-md);
+    --shadow-elevation-lg: var(--elevation-lg);
+
+    /* ── Motion ── */
+    --transition-fast: var(--motion-fast) var(--ease-standard);
+    --transition-base: var(--motion-base) var(--ease-standard);
+    --transition-slow: var(--motion-slow) var(--ease-standard);
+
+    /* ── Z-index layers ── */
+    --z-table-sticky: var(--layer-table-sticky);
+    --z-sticky: var(--layer-sticky);
+    --z-panel-overlay: var(--layer-panel-overlay);
+    --z-drag: var(--layer-drag);
+    --z-split-preview: var(--layer-split-preview);
+    --z-popover: var(--layer-popover);
+    --z-dropdown: var(--layer-dropdown);
+    --z-toolbar: var(--layer-toolbar);
+    --z-overlay: var(--layer-overlay);
+    --z-modal: var(--layer-modal);
+    --z-modal-confirm: var(--layer-modal-confirm);
+    --z-toast: var(--layer-toast);
+    --z-tooltip: var(--layer-tooltip);
+    --z-topmost: var(--layer-topmost);
+}
+
+@layer utilities {
+    .truncate-cell {
+        overflow: hidden;
+        text-overflow: ellipsis;
+        white-space: nowrap;
+    }
+
+    /* Z-index utilities */
+    .z-sticky {
+        z-index: var(--layer-sticky);
+    }
+
+    .z-panel-overlay {
+        z-index: var(--layer-panel-overlay);
+    }
+
+    .z-drag {
+        z-index: var(--layer-drag);
+    }
+
+    .z-popover {
+        z-index: var(--layer-popover);
+    }
+
+    .z-dropdown {
+        z-index: var(--layer-dropdown);
+    }
+
+    .z-toolbar {
+        z-index: var(--layer-toolbar);
+    }
+
+    .z-overlay {
+        z-index: var(--layer-overlay);
+    }
+
+    .z-modal {
+        z-index: var(--layer-modal);
+    }
+
+    .z-modal-confirm {
+        z-index: var(--layer-modal-confirm);
+    }
+
+    .z-toast {
+        z-index: var(--layer-toast);
+    }
+
+    .z-tooltip {
+        z-index: var(--layer-tooltip);
+    }
+
+    .z-topmost {
+        z-index: var(--layer-topmost);
+    }
+
+    /* Motion duration utilities (replaces hardcoded duration-150) */
+    .duration-fast {
+        transition-duration: var(--motion-fast);
+    }
+
+    .duration-base {
+        transition-duration: var(--motion-base);
+    }
+
+    .duration-slow {
+        transition-duration: var(--motion-slow);
+    }
+
+    .ease-standard {
+        transition-timing-function: var(--ease-standard);
+    }
+
+    /* env-badge-* — fixed brand colors (blue/amber/red), deliberately NOT
+       theme tokens. Environment identity (dev/staging/production) has to
+       read the same regardless of which accent color the user or theme
+       preset has picked — a green-accented theme still needs a "dev" badge
+       people recognize as blue, not the app's own accent. */
+    .env-badge-dev {
+        background-color: #0078d4;
+        color: #fff;
+    }
+
+    .env-badge-sta {
+        background-color: #b45309;
+        color: #fff;
+    }
+
+    .env-badge-pro {
+        background-color: #c92a2a;
+        color: #fff;
+    }
+
+    /* env-toolbar-* — env tint for the toolbar/diff surfaces, derived from the
+       same fixed brand colors above (not theme tokens) for the same reason.
+       Same mix strength in both themes; staging/production strongest. */
+    .env-toolbar-dev {
+        background-color: color-mix(in srgb, #0078d4 30%, transparent);
+    }
+
+    .env-toolbar-sta {
+        background-color: color-mix(in srgb, #b45309 36%, transparent);
+    }
+
+    .env-toolbar-pro {
+        background-color: color-mix(in srgb, #c92a2a 36%, transparent);
+    }
+
+    .debug-mode-badge {
+        background-color: var(--alert-info-bg);
+        border: 1px solid var(--alert-info-border);
+        color: var(--interactive-primary);
+    }
+
+    .glow-warning {
+        filter: drop-shadow(0 0 4px color-mix(in srgb, var(--status-warning) 55%, transparent));
+    }
+
+    .glow-success {
+        box-shadow: 0 0 8px color-mix(in srgb, var(--status-success) 60%, transparent);
+    }
+}
+
+@import './styles/fonts.css';
+@import './styles/tokens.css';
+@import './styles/base.css';
+@import './styles/animations.css';
+@import './styles/components.css';
+@import './styles/patterns.css';
+
+.env-action-dev {
+    background-color: var(--interactive-primary);
+    border-color: transparent;
+    color: #fff;
+}
+
+.env-action-dev:hover,
+.env-action-dev:focus-visible {
+    background-color: color-mix(in srgb, var(--interactive-primary) 90%, black 10%);
+    color: #fff;
+}
+
+.env-action-sta {
+    background-color: var(--status-warning);
+    border-color: transparent;
+    color: #fff;
+}
+
+.env-action-sta:hover,
+.env-action-sta:focus-visible {
+    background-color: color-mix(in srgb, var(--status-warning) 90%, black 10%);
+    color: #fff;
+}
+
+.env-action-pro {
+    background-color: var(--status-destructive);
+    border-color: transparent;
+    color: #fff;
+}
+
+.env-action-pro:hover,
+.env-action-pro:focus-visible {
+    background-color: color-mix(in srgb, var(--status-destructive) 90%, black 10%);
+    color: #fff;
+}
+
+.zentro-sql-editor {
+    --zentro-bookmark-dot-size: clamp(
+        12px,
+        calc(var(--zentro-editor-font-size, 14px) * 0.52),
+        12px
+    );
+}
+
+.zentro-bookmark-glyph {
+    background: var(--status-success);
+    border-radius: 999px;
+    width: var(--zentro-bookmark-dot-size) !important;
+    height: var(--zentro-bookmark-dot-size) !important;
+    margin-left: 0;
+    margin-top: calc(
+        (var(--zentro-editor-line-height, 21px) - var(--zentro-bookmark-dot-size)) / 2
+    );
+}
+
+.zentro-bookmark-margin {
+    position: absolute !important;
+    left: -8px !important;
+    top: 50% !important;
+    transform: translateY(-50%) !important;
+    width: calc(var(--zentro-bookmark-dot-size)) !important;
+    height: 75% !important;
+    background: var(--status-success) !important;
+    border-radius: 8px !important;
+}
+
+.zentro-active-statement-outline {
+    position: absolute !important;
+    overflow: hidden;
+    pointer-events: none;
+}
+
+.zentro-active-statement-outline > svg {
+    display: block;
+}
+
+.zentro-active-statement-outline path {
+    /* Border disabled pending a style pass — keep the outline-path
+       computation (editorStatementHighlight.ts) intact so it's a one-line
+       flip to bring back. */
+    fill: none;
+    stroke: none;
+    stroke-linecap: round;
+    stroke-linejoin: round;
+    stroke-width: 2px;
+    vector-effect: non-scaling-stroke;
+}
+
+/* Was paired with the outline border above (also disabled for now) to hand
+   off to a border-only look when a selection exactly spans a statement.
+   With the border off, leave the normal selection/executed-statement
+   background visible instead of hiding it with nothing to replace it. */
+
+.zentro-executed-statement {
+    background: color-mix(in srgb, var(--interactive-primary) 16%, transparent);
+    border-radius: 3px;
+}
+
+.zentro-risk-destructive {
+    background: color-mix(in srgb, var(--status-destructive) 5%, transparent) !important;
+    /* border-radius: 3px; */
+}
+
+.zentro-risk-write {
+    background: color-mix(in srgb, var(--status-warning) 5%, transparent) !important;
+    border-radius: 3px;
+}
+
+.zentro-preview-highlight {
+    background: color-mix(in srgb, var(--interactive-primary) 8%, transparent) !important;
+    border-left: 2px solid color-mix(in srgb, var(--interactive-primary) 60%, transparent) !important;
+    border-right: 1px solid color-mix(in srgb, var(--interactive-primary) 30%, transparent) !important;
+}
+
+.zentro-preview-highlight-top {
+    border-top: 1px solid color-mix(in srgb, var(--interactive-primary) 40%, transparent) !important;
+}
+
+.zentro-preview-highlight-bottom {
+    border-bottom: 1px solid color-mix(in srgb, var(--interactive-primary) 40%, transparent) !important;
+}
+
+.zentro-sql-editor .monaco-editor .margin .line-numbers {
+    font-size: inherit !important;
+    line-height: inherit !important;
+    text-align: center !important;
+    position: relative !important;
+    margin-left: 12px !important;
+}
+
+.zentro-sql-editor .monaco-editor .view-overlays .current-line {
+    border: none !important;
+    background: color-mix(in srgb, var(--interactive-primary) 12%, transparent) !important;
+}
+
+.zentro-sql-editor .monaco-editor .margin .current-line-margin {
+    border: none !important;
+    background: color-mix(in srgb, var(--interactive-primary) 12%, transparent) !important;
+}
+
+.zentro-filter-monaco .monaco-editor,
+.zentro-filter-monaco .monaco-editor-background,
+.zentro-filter-monaco .inputarea.ime-input {
+    background: transparent !important;
+}
+
+.zentro-filter-monaco .monaco-editor .view-line {
+    font-family: var(--font-family-mono);
+}
+
+/* Suggest widget (autocomplete dropdown) — Monaco's own suggest.css reads these
+   as real CSS custom properties at paint time (see monaco-editor's
+   editorColorRegistry: every `editorSuggestWidget.*` color is exposed as
+   `--vscode-editorSuggestWidget-*` on .monaco-editor), so remapping them here
+   tracks theme/accent changes live with no monaco.editor.defineTheme() call
+   needed. Values mirror the app's own dropdown/command-list surfaces
+   (dropdown-menu.tsx's bg-popover/border-border, command.tsx's
+   data-selected row) instead of Monaco's stock VS Code blue. !important
+   guards against Monaco's own theme <style> tag, which is injected at
+   runtime and can otherwise win the tie on selector specificity. */
+.monaco-editor {
+    --vscode-editorSuggestWidget-background: var(--popover) !important;
+    --vscode-editorSuggestWidget-border: var(--border) !important;
+    --vscode-editorSuggestWidget-foreground: var(--popover-foreground) !important;
+    --vscode-editorSuggestWidgetStatus-foreground: var(--muted-foreground) !important;
+    --vscode-editorSuggestWidget-selectedBackground: var(--state-selected-bg) !important;
+    --vscode-editorSuggestWidget-selectedForeground: var(--state-selected-text) !important;
+    --vscode-editorSuggestWidget-selectedIconForeground: var(--state-selected-text) !important;
+    --vscode-editorSuggestWidget-highlightForeground: var(--interactive-primary) !important;
+    --vscode-editorSuggestWidget-focusHighlightForeground: var(--interactive-primary) !important;
+}
+
+/* Monaco suggest documentation table styling */
+.zentro-sql-editor .monaco-editor .suggest-widget .details .markdown-doc .zentro-suggest-doc {
+    font-family: var(--font-family-mono);
+    font-size: 12px;
+    line-height: 1.35;
+    color: var(--content-primary);
+}
+
+.zentro-sql-editor
+    .monaco-editor
+    .suggest-widget
+    .details
+    .markdown-doc
+    .zentro-suggest-doc__title {
+    margin: 0 0 8px 0;
+    font-weight: 700;
+    font-size: 12px;
+    color: var(--content-primary);
+}
+
+.zentro-sql-editor
+    .monaco-editor
+    .suggest-widget
+    .details
+    .markdown-doc
+    .zentro-suggest-doc__table {
+    width: 100%;
+    border-collapse: collapse;
+    table-layout: fixed;
+    border: 1px solid var(--border-subtle);
+    background: var(--surface-panel);
+}
+
+.zentro-sql-editor
+    .monaco-editor
+    .suggest-widget
+    .details
+    .markdown-doc
+    .zentro-suggest-doc__table
+    th,
+.zentro-sql-editor
+    .monaco-editor
+    .suggest-widget
+    .details
+    .markdown-doc
+    .zentro-suggest-doc__table
+    td {
+    padding: 4px 8px;
+    border-bottom: 1px solid var(--border-subtle);
+    text-align: left;
+    vertical-align: top;
+    white-space: normal;
+    overflow-wrap: anywhere;
+}
+
+.zentro-sql-editor
+    .monaco-editor
+    .suggest-widget
+    .details
+    .markdown-doc
+    .zentro-suggest-doc__table
+    th {
+    background: var(--surface-elevated);
+    color: var(--content-secondary);
+    font-weight: 700;
+}
+
+.zentro-sql-editor
+    .monaco-editor
+    .suggest-widget
+    .details
+    .markdown-doc
+    .zentro-suggest-doc__table
+    tbody
+    tr:last-child
+    td {
+    border-bottom: none;
+}
+
+/* Fallback selectors if Monaco sanitizer strips class attributes */
+.zentro-sql-editor .monaco-editor .suggest-widget .details .markdown-doc table {
+    width: 100%;
+    border-collapse: collapse;
+    table-layout: fixed;
+    border: 1px solid var(--border-subtle);
+    background: var(--surface-panel);
+}
+
+.zentro-sql-editor .monaco-editor .suggest-widget .details .markdown-doc table th,
+.zentro-sql-editor .monaco-editor .suggest-widget .details .markdown-doc table td {
+    padding: 4px 8px;
+    border-bottom: 1px solid var(--border-subtle);
+    text-align: left;
+    vertical-align: top;
+    white-space: normal;
+    overflow-wrap: anywhere;
+}
+
+.monaco-editor .suggest-widget,
+.monaco-editor .monaco-hover,
+.monaco-editor .parameter-hints-widget {
+    z-index: calc(var(--layer-topmost) + 1) !important;
+}
+
+.zentro-sql-editor .monaco-editor .context-view .action-widget {
+    min-width: 240px;
+    width: max-content;
+    max-width: min(420px, calc(100vw - 32px));
+}
+
+.zentro-sql-editor .monaco-editor .context-view .action-widget .monaco-list-row.action {
+    width: auto;
+    min-width: 100%;
+}
+
+.zentro-sql-editor .monaco-editor .context-view .action-widget .monaco-list-row.action .title {
+    overflow: visible;
+    text-overflow: clip;
+}
+
+.zentro-table-nav-widget {
+    min-width: 220px;
+    max-width: 360px;
+    border: 1px solid var(--border-default);
+    background: var(--popover);
+    color: var(--popover-foreground);
+    box-shadow: var(--elevation-md);
+    border-radius: var(--radius-scale-md);
+    font-size: 12px;
+    line-height: 1.4;
+    overflow: hidden;
+    pointer-events: auto;
+    z-index: var(--layer-popover);
+}
+
+.zentro-table-nav-widget.hidden {
+    display: none;
+}
+
+.zentro-table-nav-widget--hint {
+    min-width: 140px;
+    max-width: 280px;
+    padding: 8px 12px;
+    border-left: 3px solid var(--interactive-primary);
+}
+
+.zentro-table-nav-widget__header {
+    padding: 8px 12px;
+    border-bottom: 1px solid var(--border-subtle);
+    font-size: 11px;
+    font-weight: 700;
+    text-transform: uppercase;
+    letter-spacing: 0.04em;
+    color: var(--muted-foreground);
+    background: var(--muted);
+}
+
+.zentro-table-nav-widget__list {
+    max-height: 220px;
+    overflow: auto;
+}
+
+.zentro-table-nav-widget__item {
+    width: 100%;
+    border: 0;
+    margin: 0;
+    padding: 8px 12px;
+    background: transparent;
+    color: var(--popover-foreground);
+    text-align: left;
+    cursor: pointer;
+    font-family: var(--font-family-sans);
+    font-size: 12px;
+    transition:
+        background-color var(--motion-fast) var(--ease-standard),
+        color var(--motion-fast) var(--ease-standard);
+}
+
+.zentro-table-nav-widget__item:focus-visible {
+    outline: none;
+    box-shadow: inset 0 0 0 2px var(--ring);
+}
+
+.zentro-table-nav-widget__item:hover,
+.zentro-table-nav-widget__item.is-active {
+    background: var(--state-hover-bg);
+    color: var(--foreground);
+}
+
+.zentro-table-nav-hover {
+    cursor: pointer;
+    font-weight: 600;
+    opacity: 0.95;
+    text-decoration: underline;
+    text-decoration-thickness: 1px;
+    text-underline-offset: 2px;
+    text-decoration-color: color-mix(in srgb, var(--interactive-primary) 66%, transparent);
+    transition:
+        color var(--motion-fast) var(--ease-standard),
+        opacity var(--motion-fast) var(--ease-standard),
+        text-decoration-color var(--motion-fast) var(--ease-standard);
+}
+
+.zentro-schema-warning-token,
+.zentro-schema-error-token {
+    cursor: help;
+    text-decoration-line: underline;
+    text-decoration-style: wavy;
+    text-decoration-thickness: 1px;
+    text-underline-offset: 2px;
+    text-decoration-color: var(--status-warning);
+}
+
+.zentro-schema-error-token {
+    text-decoration-color: var(--status-destructive);
+}
+
+/* Inline diagnostics ("Error Lens"): the message after the code, line tinted. */
+.zentro-error-lens-line-error {
+    background-color: color-mix(in srgb, var(--status-destructive) 12%, transparent);
+}
+
+.zentro-error-lens-line-warning {
+    background-color: color-mix(in srgb, var(--status-warning) 12%, transparent);
+}
+
+/* Monaco cuts a long injected text into chunks of ~50 characters and puts the
+   class on every chunk, so nothing here may add horizontal space (a margin
+   would open a gap in the middle of the message); the leading gap is spaces in
+   the text itself. The selectors out-rank Monaco's token colour rules
+   (.monaco-editor .mtkN), which would otherwise turn the text back to grey. */
+.monaco-editor .view-line span.zentro-error-lens-message-error,
+.monaco-editor .view-line span.zentro-error-lens-message-warning {
+    font-style: italic;
+    opacity: 0.9;
+    pointer-events: none;
+    user-select: none;
+}
+
+.monaco-editor .view-line span.zentro-error-lens-message-error {
+    color: var(--status-destructive);
+}
+
+.monaco-editor .view-line span.zentro-error-lens-message-warning {
+    color: var(--status-warning);
+}
+
+/* Hide Allotment resize border/highlight line while keeping drag behavior */
+.allotment-module_splitView__L-yRc.allotment-module_separatorBorder__x-rDS
+    > .allotment-module_splitViewContainer__rQnVa
+    > .allotment-module_splitViewView__MGZ6O:not(:first-child)::before {
+    background-color: transparent !important;
+}
+
+.sash-module_sash__K-9lB.sash-module_hover__80W6I:before {
+    background: var(--interactive-primary) !important;
+    box-shadow: none;
+}
+
+.sash-module_sash__K-9lB.sash-module_active__bJspD:before {
+    background: var(--interactive-primary) !important;
+    box-shadow: none;
+}
+
+/* Schema-aware SQL names (opt-in). Colours come from --zentro-sql-* variables
+   that useThemeManager sets from the user's SQL Editor Colors settings.
+   Monaco paints every token with a single-class `.mtkN { color }` rule that it
+   injects into the document after this stylesheet, so an ordinary class here
+   would always lose; the `.monaco-editor` prefix and `!important` are what let
+   these win. A test (index.css.test.ts) keeps it that way. */
+.monaco-editor .zentro-sql-table {
+    color: var(--zentro-sql-table-color) !important;
+    font-weight: var(--zentro-sql-table-weight, inherit) !important;
+    font-style: var(--zentro-sql-table-style, inherit) !important;
+}
+
+.monaco-editor .zentro-sql-column {
+    color: var(--zentro-sql-column-color) !important;
+    font-weight: var(--zentro-sql-column-weight, inherit) !important;
+    font-style: var(--zentro-sql-column-style, inherit) !important;
+}
+
+.monaco-editor .zentro-sql-alias {
+    color: var(--zentro-sql-alias-color) !important;
+    font-weight: var(--zentro-sql-alias-weight, inherit) !important;
+    font-style: var(--zentro-sql-alias-style, inherit) !important;
+}
+
+/* Semi-bold SQL tokens: the theme draws them bold (Monaco has no other weight)
+   and this trims it. See lib/monaco/editorTokenWeightDecorations.ts. */
+.monaco-editor .zentro-sql-semibold {
+    font-weight: 600 !important;
+}
