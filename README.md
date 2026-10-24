@@ -42,6 +42,10 @@ single-binary desktop app, free forever.
 
 Built with a Go + Wails backend and a React + TypeScript frontend.
 
+## Screenshots
+
+![Zentro SQL editor with schema-aware autocomplete, the schema explorer and a record panel](docs/images/screenshot-editor.png)
+
 ## Download
 
 Download the latest prebuilt binaries from [zentro-ide.com/downloads](https://zentro-ide.com/downloads).
